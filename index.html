@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handleshare — Your business card, reimagined</title>
+<meta name="description" content="Handleshare is a digital business card for iPhone. Share your contact info, links, Wi-Fi, and files with a single QR code. Private by design — your data lives in your own iCloud.">
+<style>
+  :root { --ink:#1c1e22; --muted:#5c6570; --canvas:#eceff2; --accent:#3d5a80; --surface:#f9fafb; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--canvas); color:var(--ink);
+    font-family: ui-serif, Georgia, "Times New Roman", serif; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+  nav { display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+  nav .brand { font-weight:500; letter-spacing:2px; text-transform:uppercase; font-style:italic; color:var(--ink); }
+  nav .links a { margin-left:18px; color:var(--muted); }
+  .hero { text-align:center; padding: 48px 0 4px; }
+  .kicker { font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); font-style:italic; }
+
+  .cta-row { text-align:center; margin: 8px 0 4px; }
+  .cta {
+    display:inline-block; background:var(--ink); color:var(--canvas);
+    font-size:16px; font-weight:500; font-style:italic; font-family:inherit;
+    padding:14px 30px; border-radius:999px; box-shadow:0 14px 30px rgba(28,30,34,.12);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .cta:hover { text-decoration:none; transform:translateY(-1px); box-shadow:0 18px 36px rgba(28,30,34,.18); }
+  .cta-note { font-size:12px; color:var(--muted); font-style:italic; margin:12px 0 0; }
+  h1 { font-size:48px; font-weight:300; font-style:italic; margin:10px 0 14px; line-height:1.1; }
+  .lead { font-size:19px; color:#2a2d33; max-width:540px; margin:0 auto; font-style:italic; }
+
+  /* Single-card pager, mirroring the in-app walkthrough */
+  .pager { margin: 36px auto 8px; max-width: 460px; }
+  .stage {
+    position:relative; background:var(--surface); border:0.5px solid rgba(28,30,34,.08);
+    border-radius:28px; padding:44px 32px 40px; min-height:430px; overflow:hidden;
+    box-shadow: 0 18px 40px rgba(28,30,34,.05);
+  }
+  .slide {
+    position:absolute; inset:44px 32px 40px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition: opacity .35s ease-in-out;
+  }
+  .slide.active { opacity:1; pointer-events:auto; }
+
+  .art { position:relative; width:180px; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:8px; }
+  .art .halo {
+    position:absolute; width:160px; height:160px; border-radius:50%;
+    background:var(--accent); opacity:.16; filter:blur(18px);
+  }
+  .art svg { width:92px; height:92px; position:relative; }
+  .art .pulse { animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{ opacity:.85; transform:scale(1);} 50%{ opacity:.55; transform:scale(.94);} }
+
+  .num, .title, .rule, .body { opacity:0; }
+  .active .num   { animation: fadeIn .5s ease-in forwards; }
+  .active .title { animation: fadeIn .5s ease-in .15s forwards; }
+  .active .rule  { animation: fadeIn .5s ease-in .30s forwards; }
+  .active .body  { animation: fadeIn .5s ease-in .45s forwards; }
+  @keyframes fadeIn { to { opacity:1; } }
+
+  .num { font-size:10px; letter-spacing:3px; text-transform:uppercase; font-style:italic; color:var(--muted); }
+  .title { font-size:32px; font-weight:300; font-style:italic; margin:10px 0 0; line-height:1.15; }
+  .rule { width:56px; height:0.6px; background:rgba(28,30,34,.35); margin:16px auto; }
+  .body { font-size:15px; font-style:italic; color:var(--muted); margin:0; max-width:320px; }
+
+  .dots { display:flex; gap:8px; justify-content:center; margin-top:22px; }
+  .dot { width:6px; height:6px; border-radius:99px; background:rgba(28,30,34,.18); transition:all .35s ease-in-out; cursor:pointer; }
+  .dot.on { width:22px; background:rgba(28,30,34,.85); }
+
+  .arrows { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+  .arrow { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:6px 10px; font-family:inherit; }
+  .arrow:disabled { opacity:.25; cursor:default; }
+
+  .features { display:grid; grid-template-columns:1fr; gap:18px; margin:52px 0; }
+  @media (min-width:620px){ .features{ grid-template-columns:1fr 1fr; } }
+  .card { background:var(--surface); border:0.5px solid rgba(28,30,34,.08); border-radius:22px; padding:24px; }
+  .card h3 { margin:0 0 6px; font-size:18px; font-weight:400; }
+  .card p { margin:0; font-size:15px; color:var(--muted); }
+  .price { text-align:center; margin:48px 0; }
+  .price .tag { font-size:15px; color:var(--muted); font-style:italic; }
+  .price .amt { font-size:18px; }
+  hr { border:none; border-top:1px solid rgba(28,30,34,.1); margin:48px 0; }
+  footer { text-align:center; font-size:13px; color:var(--muted); }
+  footer a { color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="brand">Handleshare</span>
+    <span class="links">
+      <a href="support.html">Support</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </span>
+  </nav>
+
+  <header class="hero">
+    <div class="kicker">Your business card, reimagined</div>
+  </header>
+
+  <div class="cta-row">
+    <!-- Replace href with the App Store URL once the app is approved -->
+    <a class="cta" href="#" onclick="return false;">Coming soon to the App Store</a>
+    <p class="cta-note">For iPhone · Free</p>
+  </div>
+
+  <section class="pager" aria-label="How Handleshare works">
+    <div class="stage" id="stage">
+
+      <article class="slide active">
+        <div class="art"><span class="halo"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2.5"/>
+            <circle cx="8.5" cy="10.5" r="1.8"/>
+            <path d="M5.8 15.5c.5-1.6 1.5-2.4 2.7-2.4s2.2.8 2.7 2.4"/>
+            <path d="M14 9.5h4M14 12h4M14 14.5h2.5"/>
+          </svg>
+        </div>
+        <div class="num">One</div>
+        <h3 class="title">Make your card once</h3>
+        <div class="rule"></div>
+        <p class="body">Your name, title, links, and photo — everything you'd put on a business card, and everything you couldn't.</p>
+      </article>
+
+      <article class="slide">
+        <div class="art"><span class="halo"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="6" height="6" rx="1"/>
+            <rect x="14" y="4" width="6" height="6" rx="1"/>
+            <rect x="4" y="14" width="6" height="6" rx="1"/>
+            <path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
+          </svg>
+        </div>
+        <div class="num">Two</div>
+        <h3 class="title">Share with a glance</h3>
+        <div class="rule"></div>
+        <p class="body">One QR code carries your whole card. They scan, you're in their contacts — no app needed on their end.</p>
+      </article>
+
+      <article class="slide">
+        <div class="art"><span class="halo"></span>
+          <svg class="pulse" viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.5a10 10 0 0 1 14 0"/>
+            <path d="M8 15.5a6 6 0 0 1 8 0"/>
+            <circle cx="12" cy="18.5" r="1"/>
+          </svg>
+        </div>
+        <div class="num">Three</div>
+        <h3 class="title">Hand over the Wi-Fi</h3>
+        <div class="rule"></div>
+        <p class="body">Guests scan a code and they're on your network. No spelling out passwords across the room.</p>
+      </article>
+
+      <article class="slide">
+        <div class="art"><span class="halo"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="10" width="14" height="10" rx="2"/>
+            <path d="M8 10V7.5a4 4 0 0 1 8 0V10"/>
+            <circle cx="12" cy="15" r="1.4"/>
+          </svg>
+        </div>
+        <div class="num">Four</div>
+        <h3 class="title">Yours, and only yours</h3>
+        <div class="rule"></div>
+        <p class="body">No account, no tracking, no servers of ours. Your card lives on your phone and in your own private iCloud.</p>
+      </article>
+
+    </div>
+
+    <div class="dots" id="dots"></div>
+    <div class="arrows">
+      <button class="arrow" id="prev" aria-label="Previous">‹</button>
+      <button class="arrow" id="next" aria-label="Next">›</button>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="card"><h3>Everything on one card</h3><p>Contact details, social links, booking page, payment links, a short bio — arranged the way you want, shared the way they need.</p></div>
+    <div class="card"><h3>QR codes for everything</h3><p>Your full card, a single link, or your Wi-Fi — each gets its own scannable code, generated on your phone.</p></div>
+    <div class="card"><h3>Attachments that travel</h3><p>Send a portfolio, menu, rate card, or resume along with your details — right from the share sheet or email.</p></div>
+    <div class="card"><h3>Scan paper cards</h3><p>Point the camera at a paper business card and Handleshare turns it into a contact, ready to save.</p></div>
+    <div class="card"><h3>Cards for every context</h3><p>Keep separate profiles — work, personal, side project — and switch between them instantly.</p></div>
+    <div class="card"><h3>Private by design</h3><p>No account, no analytics, no tracking. Your data syncs through your own private iCloud — we never see it.</p></div>
+  </section>
+
+  <div class="price">
+    <p class="tag">Handleshare is free.</p>
+    <p class="amt">No subscription. No ads. No catch.</p>
+  </div>
+
+  <hr>
+  <footer>
+    <p>© 2026 Francesco Bertocci LLC · <a href="support.html">Support</a> · <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a> · <a href="mailto:fbmore+handleshare@gmail.com">Contact</a></p>
+  </footer>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap = document.getElementById('dots');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  let i = 0;
+
+  slides.forEach((_, n) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (n === 0 ? ' on' : '');
+    d.addEventListener('click', () => go(n));
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function go(n) {
+    n = (n + slides.length) % slides.length;
+    if (n === i) return;
+    slides[i].classList.remove('active');
+    i = n;
+    void slides[i].offsetWidth;
+    slides[i].classList.add('active');
+    dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    prev.disabled = false; next.disabled = false;
+  }
+
+  prev.addEventListener('click', () => go(i - 1));
+  next.addEventListener('click', () => go(i + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') go(i - 1);
+    if (e.key === 'ArrowRight') go(i + 1);
+  });
+
+  let x0 = null;
+  const stage = document.getElementById('stage');
+  stage.addEventListener('touchstart', e => x0 = e.touches[0].clientX, {passive:true});
+  stage.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  }, {passive:true});
+
+  let timer = setInterval(() => go(i + 1), 5000);
+  ['click','touchstart','keydown'].forEach(ev =>
+    document.addEventListener(ev, () => { clearInterval(timer); timer = setInterval(() => go(i + 1), 9000); }, {passive:true}));
+</script>
+</body>
+</html>
