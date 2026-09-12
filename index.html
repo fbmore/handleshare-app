@@ -4,247 +4,530 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Handleshare — Your business card, reimagined</title>
-<meta name="description" content="Handleshare is a digital business card for iPhone. Share your contact info, links, Wi-Fi, and files with a single QR code. Private by design — your data lives in your own iCloud.">
+<meta name="description" content="One QR code for everything: your contact card, links, files, even your Wi-Fi. Handleshare is a digital business card for iPhone — no account, no tracking, and nothing to install on the other end.">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="Handleshare — Your business card, reimagined">
+<meta property="og:description" content="One QR code for everything: your contact card, links, files, even your Wi-Fi.">
+<meta property="og:image" content="logo.png">
+<meta property="og:type" content="website">
 <style>
-  :root { --ink:#1c1e22; --muted:#5c6570; --canvas:#eceff2; --accent:#3d5a80; --surface:#f9fafb; }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--canvas); color:var(--ink);
-    font-family: ui-serif, Georgia, "Times New Roman", serif; line-height:1.6; -webkit-font-smoothing:antialiased; }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
-  nav { display:flex; justify-content:space-between; align-items:center; font-size:14px; }
-  nav .brand { font-weight:500; letter-spacing:2px; text-transform:uppercase; font-style:italic; color:var(--ink); }
-  nav .links a { margin-left:18px; color:var(--muted); }
-  .hero { text-align:center; padding: 48px 0 4px; }
-  .kicker { font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); font-style:italic; }
-
-  .cta-row { text-align:center; margin: 8px 0 4px; }
-  .cta {
-    display:inline-block; background:var(--ink); color:var(--canvas);
-    font-size:16px; font-weight:500; font-style:italic; font-family:inherit;
-    padding:14px 30px; border-radius:999px; box-shadow:0 14px 30px rgba(28,30,34,.12);
-    transition: transform .2s ease, box-shadow .2s ease;
+  :root{
+    --ink:#ffffff;
+    --muted:rgba(255,255,255,.52);
+    --muted2:rgba(255,255,255,.74);
+    --canvas:#0d0020;
+    --deep:#240153;
+    --violet:#7100BA;
+    --magenta:#C21FD4;
+    --glow:#9D47D5;
+    --surface:rgba(255,255,255,.055);
+    --surface2:rgba(255,255,255,.09);
+    --line:rgba(255,255,255,.1);
+    --outline:oklch(1 0 0 / 0.1);
+    --ease:cubic-bezier(0.2,0,0,1);
   }
-  .cta:hover { text-decoration:none; transform:translateY(-1px); box-shadow:0 18px 36px rgba(28,30,34,.18); }
-  .cta-note { font-size:12px; color:var(--muted); font-style:italic; margin:12px 0 0; }
-  h1 { font-size:48px; font-weight:300; font-style:italic; margin:10px 0 14px; line-height:1.1; }
-  .lead { font-size:19px; color:#2a2d33; max-width:540px; margin:0 auto; font-style:italic; }
-
-  /* Single-card pager, mirroring the in-app walkthrough */
-  .pager { margin: 36px auto 8px; max-width: 460px; }
-  .stage {
-    position:relative; background:var(--surface); border:0.5px solid rgba(28,30,34,.08);
-    border-radius:28px; padding:44px 32px 40px; min-height:430px; overflow:hidden;
-    box-shadow: 0 18px 40px rgba(28,30,34,.05);
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--canvas);color:var(--ink);
+    font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    overflow-x:hidden;
   }
-  .slide {
-    position:absolute; inset:44px 32px 40px; text-align:center;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    opacity:0; pointer-events:none; transition: opacity .35s ease-in-out;
+  a{color:var(--ink);text-decoration:none}
+  svg{display:block}
+  img{max-width:100%}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* skip link */
+  .skip{position:absolute;left:-9999px;top:0;z-index:100;background:#fff;color:#000;
+    padding:12px 20px;border-radius:0 0 14px 0;font-weight:600}
+  .skip:focus{left:0}
+
+  :focus-visible{outline:2px solid var(--glow);outline-offset:3px;border-radius:6px}
+
+  /* ---------- hero ---------- */
+  header.hero{
+    position:relative;text-align:center;padding:88px 24px 76px;
+    background:
+      radial-gradient(60% 44% at 50% 0%,rgba(194,31,212,.22),transparent 72%),
+      radial-gradient(48% 38% at 18% 12%,rgba(113,0,186,.28),transparent 70%),
+      radial-gradient(46% 34% at 84% 6%,rgba(157,71,213,.18),transparent 70%);
   }
-  .slide.active { opacity:1; pointer-events:auto; }
+  .logo{width:124px;height:124px;margin:0 auto 24px;animation:floaty 5.5s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  h1{font-size:clamp(40px,7.4vw,66px);font-weight:300;letter-spacing:-.025em;margin:0 0 14px;text-wrap:balance}
+  .tag{font-size:clamp(16px,2.3vw,20px);color:var(--muted2);font-weight:300;
+    max-width:530px;margin:0 auto 32px;text-wrap:pretty}
 
-  .art { position:relative; width:180px; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:8px; }
-  .art .halo {
-    position:absolute; width:160px; height:160px; border-radius:50%;
-    background:var(--accent); opacity:.16; filter:blur(18px);
+  .heroStage{max-width:340px;margin:0 auto 30px}
+  .herovid{display:none;width:100%;border-radius:26px;outline:1px solid var(--outline);outline-offset:-1px}
+  .herovid.on{display:block}
+  .heroStage.hasVideo .phoneWrap{display:none}
+
+  .badgeRow{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 0 22px}
+  .appstore img{height:54px;width:auto;display:block}
+  .appstore{display:inline-block;border-radius:10px}
+  /* Not yet on the App Store: badge is presentational until the ID exists. */
+  .appstore[aria-disabled="true"]{opacity:.42;filter:grayscale(1);cursor:default}
+  .storenote{margin:0;font-size:13px;font-weight:300;color:var(--muted)}
+
+  .ctarow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .cta{display:inline-flex;gap:8px;align-items:center;justify-content:center;
+    background:#fff;color:#12002b;font-weight:600;padding:13px 24px;border-radius:16px;
+    font-size:16px;min-height:48px;
+    transition-property:transform,background-color,box-shadow;transition-duration:160ms;transition-timing-function:var(--ease)}
+  .cta:hover{box-shadow:0 8px 24px rgba(194,31,212,.28)}
+  .cta:active{transform:scale(.96)}
+  .cta.ghost{background:var(--surface);color:var(--ink);
+    box-shadow:inset 0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.3)}
+  .cta.ghost:hover{background:var(--surface2)}
+
+  /* ---------- phone mock ---------- */
+  .phoneWrap{display:flex;justify-content:center}
+  .phone{
+    position:relative;width:270px;aspect-ratio:9/19;flex:none;
+    background:linear-gradient(170deg,#2b0a57,#14002f);
+    border-radius:42px;padding:9px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.11),
+      0 28px 60px -18px rgba(0,0,0,.85),
+      0 0 70px -14px rgba(157,71,213,.4);
   }
-  .art svg { width:92px; height:92px; position:relative; }
-  .art .pulse { animation: pulse 2.2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{ opacity:.85; transform:scale(1);} 50%{ opacity:.55; transform:scale(.94);} }
+  .notch{position:absolute;top:15px;left:50%;transform:translateX(-50%);
+    width:78px;height:20px;background:#07000f;border-radius:11px;z-index:3}
+  /* inner radius = outer 42 − 9 padding = 33 (concentric) */
+  .screen{position:relative;width:100%;height:100%;border-radius:33px;overflow:hidden;
+    background:radial-gradient(120% 80% at 50% 0%,#4b0d8f,#1a0038 62%,#12002b);
+    display:flex;flex-direction:column}
+  .st{display:flex;justify-content:space-between;align-items:center;
+    padding:15px 20px 0;font-size:11px;font-weight:600;color:rgba(255,255,255,.9);
+    font-variant-numeric:tabular-nums}
+  .st svg{width:30px;height:11px}
+  .pbody{flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:14px 18px 62px;gap:11px}
 
-  .num, .title, .rule, .body { opacity:0; }
-  .active .num   { animation: fadeIn .5s ease-in forwards; }
-  .active .title { animation: fadeIn .5s ease-in .15s forwards; }
-  .active .rule  { animation: fadeIn .5s ease-in .30s forwards; }
-  .active .body  { animation: fadeIn .5s ease-in .45s forwards; }
-  @keyframes fadeIn { to { opacity:1; } }
+  .pAvatar{width:52px;height:52px;border-radius:50%;
+    background:linear-gradient(150deg,var(--magenta),var(--violet));
+    display:grid;place-items:center;font-size:19px;font-weight:600;
+    box-shadow:0 0 0 1px var(--outline)}
+  .pName{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .pRole{font-size:11px;color:rgba(255,255,255,.6);margin-top:-7px;text-align:center}
+  .qr{width:112px;height:112px;border-radius:16px;background:#fff;padding:9px;
+    box-shadow:0 8px 22px rgba(0,0,0,.42)}
+  .qr svg{width:100%;height:100%}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .chip{font-size:9.5px;padding:5px 9px;border-radius:9px;background:rgba(255,255,255,.12);
+    color:rgba(255,255,255,.88);white-space:nowrap}
+  .pHint{font-size:10px;color:rgba(255,255,255,.5);text-align:center;text-wrap:pretty}
 
-  .num { font-size:10px; letter-spacing:3px; text-transform:uppercase; font-style:italic; color:var(--muted); }
-  .title { font-size:32px; font-weight:300; font-style:italic; margin:10px 0 0; line-height:1.15; }
-  .rule { width:56px; height:0.6px; background:rgba(28,30,34,.35); margin:16px auto; }
-  .body { font-size:15px; font-style:italic; color:var(--muted); margin:0; max-width:320px; }
+  /* bottom action bar inside the mock — keeps tall screens from reading as empty */
+  .pActions{position:absolute;left:18px;right:18px;bottom:18px;display:flex;gap:7px}
+  .pBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+    font-size:10.5px;font-weight:600;padding:9px 0;border-radius:12px;
+    background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px var(--line)}
+  .pBtn.primary{background:linear-gradient(150deg,var(--magenta),var(--violet));box-shadow:none}
+  .pBtn svg{width:13px;height:13px}
 
-  .dots { display:flex; gap:8px; justify-content:center; margin-top:22px; }
-  .dot { width:6px; height:6px; border-radius:99px; background:rgba(28,30,34,.18); transition:all .35s ease-in-out; cursor:pointer; }
-  .dot.on { width:22px; background:rgba(28,30,34,.85); }
+  /* wifi screen */
+  .wifiCard{width:100%;border-radius:17px;background:rgba(255,255,255,.09);
+    box-shadow:inset 0 0 0 1px var(--line);padding:13px 14px;display:flex;
+    align-items:center;gap:10px}
+  .wifiIco{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(150deg,var(--magenta),var(--violet))}
+  .wifiIco svg{width:17px;height:17px}
+  .wifiName{font-size:12px;font-weight:600}
+  .wifiSub{font-size:9.5px;color:rgba(255,255,255,.55)}
 
-  .arrows { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
-  .arrow { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:6px 10px; font-family:inherit; }
-  .arrow:disabled { opacity:.25; cursor:default; }
+  /* scan screen */
+  .scanFrame{position:relative;width:100%;aspect-ratio:1.62;border-radius:14px;
+    background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+    box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;padding:13px}
+  .scanLine{position:absolute;left:8%;right:8%;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,var(--magenta),transparent);
+    animation:scan 2.6s var(--ease) infinite}
+  @keyframes scan{0%,100%{top:16%;opacity:.25}50%{top:80%;opacity:1}}
+  .sk{height:6px;border-radius:3px;background:rgba(255,255,255,.32);margin-bottom:7px}
 
-  .features { display:grid; grid-template-columns:1fr; gap:18px; margin:52px 0; }
-  @media (min-width:620px){ .features{ grid-template-columns:1fr 1fr; } }
-  .card { background:var(--surface); border:0.5px solid rgba(28,30,34,.08); border-radius:22px; padding:24px; }
-  .card h3 { margin:0 0 6px; font-size:18px; font-weight:400; }
-  .card p { margin:0; font-size:15px; color:var(--muted); }
-  .price { text-align:center; margin:48px 0; }
-  .price .tag { font-size:15px; color:var(--muted); font-style:italic; }
-  .price .amt { font-size:18px; }
-  hr { border:none; border-top:1px solid rgba(28,30,34,.1); margin:48px 0; }
-  footer { text-align:center; font-size:13px; color:var(--muted); }
-  footer a { color:var(--muted); }
+  /* profiles screen */
+  .profRow{width:100%;display:flex;align-items:center;gap:9px;padding:9px 11px;
+    border-radius:15px;background:rgba(255,255,255,.07);
+    box-shadow:inset 0 0 0 1px var(--line)}
+  .profRow.sel{background:rgba(194,31,212,.2);box-shadow:inset 0 0 0 1px rgba(194,31,212,.5)}
+  .profDot{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;
+    font-size:10px;font-weight:600}
+  .profName{font-size:11px;font-weight:600}
+  .profSub{font-size:9px;color:rgba(255,255,255,.55)}
+
+  /* files screen */
+  .fileRow{width:100%;display:flex;align-items:center;gap:9px;padding:9px 11px;
+    border-radius:14px;background:rgba(255,255,255,.07);
+    box-shadow:inset 0 0 0 1px var(--line)}
+  .fileIco{width:26px;height:26px;border-radius:8px;flex:none;display:grid;place-items:center;
+    background:rgba(255,255,255,.14)}
+  .fileIco svg{width:14px;height:14px}
+  .fileName{font-size:10.5px;font-weight:600}
+  .fileSize{font-size:9px;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums}
+
+  /* ---------- feature sections ---------- */
+  .feat{padding:80px 0;border-top:1px solid var(--line)}
+  .feat .wrap{display:grid;grid-template-columns:1fr auto;gap:56px;align-items:center}
+  .feat.flip .wrap{grid-template-columns:auto 1fr}
+  .feat h2{font-size:clamp(26px,3.6vw,38px);font-weight:300;letter-spacing:-.02em;
+    margin:0 0 14px;text-wrap:balance}
+  .feat p{font-size:17px;color:var(--muted2);font-weight:300;margin:0 0 20px;
+    max-width:44ch;text-wrap:pretty}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--glow);font-weight:600;margin:0 0 12px}
+  .bul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:11px}
+  .bul li{display:flex;gap:11px;align-items:flex-start;font-size:15px;color:var(--muted2);
+    font-weight:300;text-wrap:pretty}
+  .bul svg{width:19px;height:19px;flex:none;margin-top:2px;color:var(--glow)}
+
+  /* ---------- privacy band ---------- */
+  .band{padding:80px 0;border-top:1px solid var(--line);
+    background:radial-gradient(60% 100% at 50% 100%,rgba(113,0,186,.2),transparent 70%)}
+  .band .wrap{text-align:center}
+  .band h2{font-size:clamp(26px,3.6vw,38px);font-weight:300;letter-spacing:-.02em;
+    margin:0 0 14px;text-wrap:balance}
+  .band p{font-size:17px;color:var(--muted2);font-weight:300;max-width:56ch;margin:0 auto 36px;
+    text-wrap:pretty}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:left}
+  .tile{background:var(--surface);border-radius:20px;padding:22px;
+    box-shadow:inset 0 0 0 1px var(--line),0 1px 3px rgba(0,0,0,.3)}
+  .tile svg{width:24px;height:24px;color:var(--glow);margin-bottom:12px}
+  .tile h3{font-size:16px;font-weight:600;margin:0 0 6px}
+  .tile p{font-size:14px;color:var(--muted);margin:0;font-weight:300;text-wrap:pretty}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:44px 0 60px;text-align:center}
+  .flinks{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  .flinks a{font-size:15px;color:var(--muted2);padding:10px 14px;border-radius:12px;
+    min-height:44px;display:inline-flex;align-items:center;
+    transition-property:color,background-color;transition-duration:150ms;transition-timing-function:var(--ease)}
+  .flinks a:hover{color:var(--ink);background:var(--surface)}
+  .fnote{font-size:13px;color:var(--muted);font-weight:300;margin:0}
+
+  @media (max-width:820px){
+    .feat .wrap,.feat.flip .wrap{grid-template-columns:1fr;gap:36px;justify-items:center}
+    .feat .copy{order:1;text-align:center}
+    .feat .phoneWrap{order:2}
+    .bul li{text-align:left}
+    .bul{max-width:340px;margin:0 auto}
+    .feat p{margin-left:auto;margin-right:auto}
+    .grid3{grid-template-columns:1fr}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+      transition-duration:.001ms!important}
+  }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <nav>
-    <span class="brand">Handleshare</span>
-    <span class="links">
+
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <g id="i-check" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></g>
+    <g id="i-qr" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3v3h-3z"/></g>
+    <g id="i-wifi" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></g>
+    <g id="i-scan" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16M7 12h10"/></g>
+    <g id="i-cards" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="14" height="12" rx="2.5"/><path d="M7 4.5h10A3.5 3.5 0 0 1 20.5 8v8"/></g>
+    <g id="i-file" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></g>
+    <g id="i-lock" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></g>
+    <g id="i-cloud" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .3-9 6.5 6.5 0 0 0-12.4 2A3.9 3.9 0 0 0 6 19z"/></g>
+    <g id="i-bolt" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></g>
+    <g id="i-link" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5a4 4 0 0 0 5.7 0l3-3a4 4 0 1 0-5.7-5.7l-1.7 1.7"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-3 3a4 4 0 1 0 5.7 5.7l1.7-1.7"/></g>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="logo" id="logoAnim" role="img" aria-label="Handleshare">
+    <noscript><img src="logo.png" width="124" height="124" alt="Handleshare"></noscript>
+  </div>
+  <h1>Handleshare</h1>
+  <p class="tag">One QR code for everything you'd put on a business card — and a few things you couldn't.</p>
+
+  <div class="heroStage" id="heroStage">
+    <!-- Hero video: drops in automatically once media/pitch-hero.mp4 exists. -->
+    <video class="herovid" id="heroVid" muted loop playsinline preload="metadata"
+           aria-label="A silent tour of Handleshare: building a card, showing its QR code, sharing Wi-Fi, and scanning a paper business card.">
+      <source src="media/pitch-hero.mp4" type="video/mp4">
+    </video>
+    <div class="phoneWrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="st"><span>9:41</span>
+            <svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg>
+          </div>
+          <div class="pbody">
+            <div class="pAvatar" aria-hidden="true">FM</div>
+            <div class="pName">Francesco M.</div>
+            <div class="pRole">Design Engineer · Studio</div>
+            <div class="qr" aria-hidden="true">
+              <svg viewBox="0 0 29 29" fill="#12002b" shape-rendering="crispEdges">
+                <path d="M0.5 0.5h6v6h-6zM22.5 0.5h6v6h-6zM0.5 22.5h6v6h-6z" fill="none" stroke="#12002b" stroke-width="1"/>
+                <rect x="2" y="2" width="3" height="3"/><rect x="24" y="2" width="3" height="3"/><rect x="2" y="24" width="3" height="3"/>
+                <path d="M9 1h1v1H9zM11 1h1v1h-1zM13 1h1v1h-1zM10 3h1v1h-1zM12 3h1v1h-1zM9 5h1v1H9zM13 5h1v1h-1zM1 9h1v1H1zM3 9h1v1H3zM5 9h1v1H5zM2 11h1v1H2zM4 11h1v1H4zM0 13h1v1H0zM6 13h1v1H6zM9 9h1v1H9zM11 10h1v1h-1zM13 9h1v1h-1zM10 12h1v1h-1zM12 12h1v1h-1zM9 14h1v1H9zM14 14h1v1h-1zM16 9h1v1h-1zM18 11h1v1h-1zM20 9h1v1h-1zM17 13h1v1h-1zM19 15h1v1h-1zM23 9h1v1h-1zM25 11h1v1h-1zM27 9h1v1h-1zM24 13h1v1h-1zM26 13h1v1h-1zM9 17h1v1H9zM11 18h1v1h-1zM13 17h1v1h-1zM10 20h1v1h-1zM12 21h1v1h-1zM9 23h1v1H9zM13 25h1v1h-1zM11 27h1v1h-1zM16 17h1v1h-1zM18 18h1v1h-1zM20 17h1v1h-1zM17 20h1v1h-1zM19 22h1v1h-1zM16 24h1v1h-1zM21 25h1v1h-1zM23 17h1v1h-1zM25 19h1v1h-1zM27 17h1v1h-1zM24 21h1v1h-1zM26 23h1v1h-1zM23 25h1v1h-1zM27 27h1v1h-1zM15 2h1v1h-1zM15 4h1v1h-1zM17 6h1v1h-1zM19 4h1v1h-1zM21 6h1v1h-1zM2 16h1v1H2zM4 18h1v1H4zM1 20h1v1H1zM5 22h1v1H5zM3 24h1v1H3zM6 26h1v1H6z"/>
+              </svg>
+            </div>
+            <div class="chips" aria-hidden="true"><span class="chip">Contact</span><span class="chip">Links</span><span class="chip">Wi-Fi</span></div>
+            <div class="pHint">Any camera can scan it. No app needed.</div>
+            <div class="pActions" aria-hidden="true">
+              <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-qr"/></svg>Share</span>
+              <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-cards"/></svg>Edit card</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="badgeRow">
+    <span class="appstore" aria-disabled="true" role="img" aria-label="Coming soon to the App Store">
+      <img src="appstore-badge.svg" alt="" aria-hidden="true">
+    </span>
+    <p class="storenote">Coming soon for iPhone · Requires iOS 26</p>
+  </div>
+
+  <div class="ctarow">
+    <a class="cta" href="#tour">See how it works</a>
+    <a class="cta ghost" href="support.html">Support</a>
+  </div>
+</header>
+
+<main id="main">
+<div id="tour"></div>
+
+<!-- 1 · QR SHARE -->
+<section class="feat">
+  <div class="wrap">
+    <div class="copy">
+      <p class="kicker">Share</p>
+      <h2>One code. Everything about you.</h2>
+      <p>Build your card once — name, title, company, links, photo, bio — then hand it over with a QR code anyone can scan with their camera. Your details land straight in their contacts.</p>
+      <ul class="bul">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>Nothing to install on their end</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-link"/></svg>Website, socials, booking and payment links</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Or send it by AirDrop, Messages, or email</li>
+      </ul>
+    </div>
+    <div class="phoneWrap">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
+        <div class="pbody">
+          <div class="pAvatar" aria-hidden="true">FM</div>
+          <div class="pName">Francesco M.</div>
+          <div class="pRole">Design Engineer · Studio</div>
+          <div class="chips" aria-hidden="true"><span class="chip">Portfolio</span><span class="chip">LinkedIn</span><span class="chip">Calendly</span><span class="chip">Venmo</span></div>
+          <div style="width:100%;display:flex;flex-direction:column;gap:7px;margin-top:3px" aria-hidden="true">
+            <div class="fileRow"><div class="fileIco"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-link"/></svg></div><div><div class="fileName">francesco.studio</div><div class="fileSize">Website</div></div></div>
+            <div class="fileRow"><div class="fileIco"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-cards"/></svg></div><div><div class="fileName">Book a 30-min call</div><div class="fileSize">Calendly</div></div></div>
+          </div>
+          <div class="pHint">Tap any link, or scan the card to save it all at once.</div>
+          <div class="pActions" aria-hidden="true">
+            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-qr"/></svg>Show QR</span>
+            <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-file"/></svg>Send</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · WI-FI -->
+<section class="feat flip">
+  <div class="wrap">
+    <div class="phoneWrap">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
+        <div class="pbody">
+          <div class="wifiCard">
+            <div class="wifiIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-wifi"/></svg></div>
+            <div><div class="wifiName">Studio Guest</div><div class="wifiSub">WPA2 · Scan to join</div></div>
+          </div>
+          <div class="qr" aria-hidden="true">
+            <svg viewBox="0 0 29 29" fill="#12002b" shape-rendering="crispEdges">
+              <path d="M0.5 0.5h6v6h-6zM22.5 0.5h6v6h-6zM0.5 22.5h6v6h-6z" fill="none" stroke="#12002b" stroke-width="1"/>
+              <rect x="2" y="2" width="3" height="3"/><rect x="24" y="2" width="3" height="3"/><rect x="2" y="24" width="3" height="3"/>
+              <path d="M10 1h1v1h-1zM12 1h1v1h-1zM9 3h1v1H9zM13 3h1v1h-1zM11 5h1v1h-1zM1 10h1v1H1zM3 10h1v1H3zM5 12h1v1H5zM0 14h1v1H0zM9 10h1v1H9zM12 11h1v1h-1zM14 9h1v1h-1zM10 13h1v1h-1zM13 14h1v1h-1zM17 10h1v1h-1zM19 12h1v1h-1zM21 10h1v1h-1zM18 14h1v1h-1zM24 10h1v1h-1zM26 12h1v1h-1zM23 14h1v1h-1zM27 11h1v1h-1zM9 18h1v1H9zM12 17h1v1h-1zM14 19h1v1h-1zM10 21h1v1h-1zM13 23h1v1h-1zM11 26h1v1h-1zM17 18h1v1h-1zM20 19h1v1h-1zM18 22h1v1h-1zM21 24h1v1h-1zM16 26h1v1h-1zM24 18h1v1h-1zM26 20h1v1h-1zM23 23h1v1h-1zM27 25h1v1h-1zM25 27h1v1h-1zM16 3h1v1h-1zM18 5h1v1h-1zM20 3h1v1h-1zM3 17h1v1H3zM5 19h1v1H5zM1 21h1v1H1zM4 24h1v1H4zM6 27h1v1H6z"/>
+            </svg>
+          </div>
+          <div class="pHint">Guests point their camera and they're on.</div>
+          <div class="pActions" aria-hidden="true">
+            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-wifi"/></svg>Show code</span>
+            <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-cards"/></svg>Edit</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+    <div class="copy">
+      <p class="kicker">Wi-Fi</p>
+      <h2>Stop spelling out your password</h2>
+      <p>Put your network on your card and guests join by scanning a code — no reading characters aloud across the room. Made for offices, studios, rentals and cafés.</p>
+      <ul class="bul">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wifi"/></svg>Standard Wi-Fi QR — works with any phone</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>Stays on your device and your private iCloud</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · SCAN -->
+<section class="feat">
+  <div class="wrap">
+    <div class="copy">
+      <p class="kicker">Scan</p>
+      <h2>Paper cards, digitised on the spot</h2>
+      <p>Handed a paper business card? Point the camera at it and Handleshare reads the details and offers to save them to Contacts. Your scan history keeps everything you've collected in one place.</p>
+      <ul class="bul">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-scan"/></svg>Reads names, numbers, emails and addresses</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cards"/></svg>Scan history you can search later</li>
+      </ul>
+    </div>
+    <div class="phoneWrap">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
+        <div class="pbody">
+          <div class="scanFrame" aria-hidden="true">
+            <div class="scanLine"></div>
+            <div class="sk" style="width:62%"></div>
+            <div class="sk" style="width:44%;opacity:.7"></div>
+            <div class="sk" style="width:78%;opacity:.5"></div>
+            <div class="sk" style="width:52%;opacity:.4;margin-bottom:0"></div>
+          </div>
+          <div class="chips" aria-hidden="true"><span class="chip">Name</span><span class="chip">Phone</span><span class="chip">Email</span></div>
+          <div class="pHint">Save to Contacts in one tap.</div>
+          <div class="pActions" aria-hidden="true">
+            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Save contact</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · PROFILES -->
+<section class="feat flip">
+  <div class="wrap">
+    <div class="phoneWrap">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
+        <div class="pbody" style="justify-content:flex-start;padding-top:30px;gap:9px">
+          <div class="pName" style="align-self:flex-start;margin-bottom:3px">Your cards</div>
+          <div class="profRow sel"><div class="profDot" style="background:linear-gradient(150deg,#C21FD4,#7100BA)" aria-hidden="true">W</div><div><div class="profName">Work</div><div class="profSub">Design Engineer · Studio</div></div></div>
+          <div class="profRow"><div class="profDot" style="background:linear-gradient(150deg,#4A01BB,#240153)" aria-hidden="true">S</div><div><div class="profName">Side project</div><div class="profSub">Founder · Foliàire</div></div></div>
+          <div class="profRow"><div class="profDot" style="background:linear-gradient(150deg,#9D47D5,#4A01BB)" aria-hidden="true">P</div><div><div class="profName">Personal</div><div class="profSub">School &amp; family</div></div></div>
+          <div class="pHint" style="margin-top:5px">Each card has its own QR code, links and files.</div>
+          <div class="pActions" aria-hidden="true">
+            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-cards"/></svg>New card</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+    <div class="copy">
+      <p class="kicker">Profiles</p>
+      <h2>A different card for every room</h2>
+      <p>Keep work, personal, side project and event cards separate, and switch between them instantly. Nobody at the school gate needs your invoicing details.</p>
+      <ul class="bul">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cards"/></svg>Separate links, photo and bio per card</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg>Switch in a tap — each keeps its own QR code</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · ATTACHMENTS -->
+<section class="feat">
+  <div class="wrap">
+    <div class="copy">
+      <p class="kicker">Files</p>
+      <h2>Send the portfolio with the card</h2>
+      <p>Attach a rate card, menu, resume or lookbook and it travels with your card. Pick which files go out with each share, and let Mail Drop handle the big ones.</p>
+      <ul class="bul">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-file"/></svg>PDFs, images and documents from Files or camera</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Choose what's included, share by share</li>
+      </ul>
+    </div>
+    <div class="phoneWrap">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
+        <div class="pbody" style="justify-content:flex-start;padding-top:30px;gap:9px">
+          <div class="pName" style="align-self:flex-start;margin-bottom:3px">Attachments</div>
+          <div class="fileRow"><div class="fileIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-file"/></svg></div><div><div class="fileName">Portfolio 2026.pdf</div><div class="fileSize">8.4 MB</div></div></div>
+          <div class="fileRow"><div class="fileIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-file"/></svg></div><div><div class="fileName">Rate card.pdf</div><div class="fileSize">412 KB</div></div></div>
+          <div class="fileRow"><div class="fileIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-file"/></svg></div><div><div class="fileName">Studio photos.zip</div><div class="fileSize">31.2 MB</div></div></div>
+          <div class="pHint" style="margin-top:5px">Big files go out through Mail Drop automatically.</div>
+          <div class="pActions" aria-hidden="true">
+            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-file"/></svg>Add file</span>
+            <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Choose</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · PRIVACY BAND -->
+<section class="band">
+  <div class="wrap">
+    <h2>No account. No servers. No tracking.</h2>
+    <p>Handleshare has nothing to sign up for. Your cards live on your device and sync through your own private iCloud — we never see your data, because we don't have anywhere to put it.</p>
+    <div class="grid3">
+      <div class="tile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>
+        <h3>Private by design</h3>
+        <p>No sign-up, no analytics, no ads. Sharing happens phone-to-phone, and only when you choose.</p>
+      </div>
+      <div class="tile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cloud"/></svg>
+        <h3>Your iCloud, not ours</h3>
+        <p>Cards sync across your devices through your private iCloud, so a new iPhone picks up where the old one left off.</p>
+      </div>
+      <div class="tile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg>
+        <h3>Works offline</h3>
+        <p>Cards, QR codes and files are always ready without a connection. Sync catches up when you're back online.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="flinks">
       <a href="support.html">Support</a>
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
-    </span>
-  </nav>
-
-  <header class="hero">
-    <div class="kicker">Your business card, reimagined</div>
-  </header>
-
-  <div class="cta-row">
-    <!-- Replace href with the App Store URL once the app is approved -->
-    <a class="cta" href="#" onclick="return false;">Coming soon to the App Store</a>
-    <p class="cta-note">For iPhone · Free</p>
-  </div>
-
-  <section class="pager" aria-label="How Handleshare works">
-    <div class="stage" id="stage">
-
-      <article class="slide active">
-        <div class="art"><span class="halo"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2.5"/>
-            <circle cx="8.5" cy="10.5" r="1.8"/>
-            <path d="M5.8 15.5c.5-1.6 1.5-2.4 2.7-2.4s2.2.8 2.7 2.4"/>
-            <path d="M14 9.5h4M14 12h4M14 14.5h2.5"/>
-          </svg>
-        </div>
-        <div class="num">One</div>
-        <h3 class="title">Make your card once</h3>
-        <div class="rule"></div>
-        <p class="body">Your name, title, links, and photo — everything you'd put on a business card, and everything you couldn't.</p>
-      </article>
-
-      <article class="slide">
-        <div class="art"><span class="halo"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="4" y="4" width="6" height="6" rx="1"/>
-            <rect x="14" y="4" width="6" height="6" rx="1"/>
-            <rect x="4" y="14" width="6" height="6" rx="1"/>
-            <path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
-          </svg>
-        </div>
-        <div class="num">Two</div>
-        <h3 class="title">Share with a glance</h3>
-        <div class="rule"></div>
-        <p class="body">One QR code carries your whole card. They scan, you're in their contacts — no app needed on their end.</p>
-      </article>
-
-      <article class="slide">
-        <div class="art"><span class="halo"></span>
-          <svg class="pulse" viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12.5a10 10 0 0 1 14 0"/>
-            <path d="M8 15.5a6 6 0 0 1 8 0"/>
-            <circle cx="12" cy="18.5" r="1"/>
-          </svg>
-        </div>
-        <div class="num">Three</div>
-        <h3 class="title">Hand over the Wi-Fi</h3>
-        <div class="rule"></div>
-        <p class="body">Guests scan a code and they're on your network. No spelling out passwords across the room.</p>
-      </article>
-
-      <article class="slide">
-        <div class="art"><span class="halo"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1c1e22" stroke-opacity=".85" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="10" width="14" height="10" rx="2"/>
-            <path d="M8 10V7.5a4 4 0 0 1 8 0V10"/>
-            <circle cx="12" cy="15" r="1.4"/>
-          </svg>
-        </div>
-        <div class="num">Four</div>
-        <h3 class="title">Yours, and only yours</h3>
-        <div class="rule"></div>
-        <p class="body">No account, no tracking, no servers of ours. Your card lives on your phone and in your own private iCloud.</p>
-      </article>
-
+      <a href="mailto:fbmore+handleshare@gmail.com">Contact</a>
     </div>
-
-    <div class="dots" id="dots"></div>
-    <div class="arrows">
-      <button class="arrow" id="prev" aria-label="Previous">‹</button>
-      <button class="arrow" id="next" aria-label="Next">›</button>
-    </div>
-  </section>
-
-  <section class="features">
-    <div class="card"><h3>Everything on one card</h3><p>Contact details, social links, booking page, payment links, a short bio — arranged the way you want, shared the way they need.</p></div>
-    <div class="card"><h3>QR codes for everything</h3><p>Your full card, a single link, or your Wi-Fi — each gets its own scannable code, generated on your phone.</p></div>
-    <div class="card"><h3>Attachments that travel</h3><p>Send a portfolio, menu, rate card, or resume along with your details — right from the share sheet or email.</p></div>
-    <div class="card"><h3>Scan paper cards</h3><p>Point the camera at a paper business card and Handleshare turns it into a contact, ready to save.</p></div>
-    <div class="card"><h3>Cards for every context</h3><p>Keep separate profiles — work, personal, side project — and switch between them instantly.</p></div>
-    <div class="card"><h3>Private by design</h3><p>No account, no analytics, no tracking. Your data syncs through your own private iCloud — we never see it.</p></div>
-  </section>
-
-  <div class="price">
-    <p class="tag">Handleshare is free.</p>
-    <p class="amt">No subscription. No ads. No catch.</p>
+    <p class="fnote">Handleshare · Made in Brooklyn</p>
   </div>
+</footer>
 
-  <hr>
-  <footer>
-    <p>© 2026 Francesco Bertocci LLC · <a href="support.html">Support</a> · <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a> · <a href="mailto:fbmore+handleshare@gmail.com">Contact</a></p>
-  </footer>
-</div>
-
+<script src="lottie_light.min.js"></script>
 <script>
-  const slides = Array.from(document.querySelectorAll('.slide'));
-  const dotsWrap = document.getElementById('dots');
-  const prev = document.getElementById('prev');
-  const next = document.getElementById('next');
-  let i = 0;
-
-  slides.forEach((_, n) => {
-    const d = document.createElement('span');
-    d.className = 'dot' + (n === 0 ? ' on' : '');
-    d.addEventListener('click', () => go(n));
-    dotsWrap.appendChild(d);
-  });
-  const dots = Array.from(dotsWrap.children);
-
-  function go(n) {
-    n = (n + slides.length) % slides.length;
-    if (n === i) return;
-    slides[i].classList.remove('active');
-    i = n;
-    void slides[i].offsetWidth;
-    slides[i].classList.add('active');
-    dots.forEach((d, k) => d.classList.toggle('on', k === i));
-    prev.disabled = false; next.disabled = false;
-  }
-
-  prev.addEventListener('click', () => go(i - 1));
-  next.addEventListener('click', () => go(i + 1));
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft') go(i - 1);
-    if (e.key === 'ArrowRight') go(i + 1);
-  });
-
-  let x0 = null;
-  const stage = document.getElementById('stage');
-  stage.addEventListener('touchstart', e => x0 = e.touches[0].clientX, {passive:true});
-  stage.addEventListener('touchend', e => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1));
-    x0 = null;
-  }, {passive:true});
-
-  let timer = setInterval(() => go(i + 1), 5000);
-  ['click','touchstart','keydown'].forEach(ev =>
-    document.addEventListener(ev, () => { clearInterval(timer); timer = setInterval(() => go(i + 1), 9000); }, {passive:true}));
+  (function(){
+    var box = document.getElementById('logoAnim');
+    if(box && window.lottie){
+      lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:true,path:'logo.json'});
+    }
+    // Swap the CSS phone mock for the pitch video, but only once it really loads.
+    var v = document.getElementById('heroVid'), stage = document.getElementById('heroStage');
+    if(v && stage){
+      v.addEventListener('loadeddata', function(){
+        v.classList.add('on');
+        stage.classList.add('hasVideo');
+        v.play().catch(function(){});
+      }, {once:true});
+    }
+  })();
 </script>
-</body>
 </html>
