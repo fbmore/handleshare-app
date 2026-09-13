@@ -88,6 +88,27 @@
     box-shadow:inset 0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.3)}
   .cta.ghost:hover{background:var(--surface2)}
 
+  /* ---------- real device shots ----------
+     Captured on an iPhone 17 Pro Max simulator from Francesco's own cards and
+     framed by Foliàire's SceneKit renderer, so the frame, the shadow and the
+     screen are one image with real alpha. No outline: the render carries its
+     own bezel and contact shadow, and a second hairline would read as a seam. */
+  .devshot{display:block;width:270px;max-width:100%;height:auto}
+  @media (max-width:900px){.devshot{width:250px}}
+
+  /* ---------- the 48-second tour ---------- */
+  .tourband{padding:78px 0;border-top:1px solid var(--line);
+    background-image:radial-gradient(60% 46% at 50% 0%,rgba(113,0,186,.2),transparent 70%);
+    background-repeat:no-repeat}
+  .tourband .wrap{max-width:1000px;margin:0 auto;padding:0 24px;text-align:center}
+  .tourband h2{font-size:clamp(26px,3.6vw,38px);font-weight:300;letter-spacing:-.02em;
+    margin:8px 0 10px;text-wrap:balance}
+  .tourband p{font-size:17px;color:var(--muted2);font-weight:300;margin:0 auto 30px;
+    max-width:56ch;text-wrap:pretty}
+  .tourvid{display:block;width:100%;aspect-ratio:16/9;border-radius:20px;background:#12002b;
+    outline:1px solid var(--outline);outline-offset:-1px;
+    box-shadow:0 24px 60px -22px rgba(0,0,0,.8),0 0 80px -28px rgba(157,71,213,.42)}
+
   /* ---------- phone mock ---------- */
   .phoneWrap{display:flex;justify-content:center}
   .phone{
@@ -278,7 +299,7 @@
     <!-- Hero video: drops in automatically once media/pitch-hero.mp4 exists. -->
     <video class="herovid" id="heroVid" muted loop playsinline autoplay preload="auto"
            poster="media/pitch-poster.jpg"
-           aria-label="A silent 17-second capture of Handleshare on iPhone: a contact card with its QR code, swiping between cards for different links, then the profile switcher opening to seven cards and changing to another.">
+           aria-label="A silent 19-second capture of Handleshare on iPhone: swiping up on a card to reveal the next one and switching to it, the profile switcher opening to seven cards, then the share sheet with contact details being switched on and off.">
       <source src="media/pitch-hero.mp4" type="video/mp4">
     </video>
     <div class="phoneWrap">
@@ -327,7 +348,21 @@
 <main id="main">
 <div id="tour"></div>
 
-<!-- 1 · QR SHARE -->
+<!-- 0 · THE TOUR -->
+<section class="tourband">
+  <div class="wrap">
+    <p class="kicker">The tour</p>
+    <h2>Forty-eight seconds, no narration</h2>
+    <p>Everything below, recorded on a real iPhone from real cards — swiping between them, choosing what each person gets, and the codes that carry it.</p>
+    <video class="tourvid" controls playsinline preload="none"
+           poster="media/pitch-16x9-poster.jpg"
+           aria-label="A silent 48-second tour of Handleshare: switching between cards, the profile switcher, choosing which details and files to share, and a QR code for every link.">
+      <source src="media/handleshare-pitch.mp4" type="video/mp4">
+    </video>
+  </div>
+</section>
+
+<!-- 1 · SHARE -->
 <section class="feat">
   <div class="wrap">
     <div class="copy">
@@ -337,58 +372,41 @@
       <ul class="bul">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>Nothing to install on their end</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-link"/></svg>Website, socials, booking and payment links</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>Every link gets its own code too — swipe to the one you need</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Or send it by AirDrop, Messages, or email</li>
       </ul>
     </div>
     <div class="phoneWrap">
-      <div class="phone"><div class="notch"></div><div class="screen">
-        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
-        <div class="pbody">
-          <div class="pAvatar" aria-hidden="true">FM</div>
-          <div class="pName">Francesco M.</div>
-          <div class="pRole">Design Engineer · Studio</div>
-          <div class="chips" aria-hidden="true"><span class="chip">Portfolio</span><span class="chip">LinkedIn</span><span class="chip">Calendly</span><span class="chip">Venmo</span></div>
-          <div style="width:100%;display:flex;flex-direction:column;gap:7px;margin-top:3px" aria-hidden="true">
-            <div class="fileRow"><div class="fileIco"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-link"/></svg></div><div><div class="fileName">francesco.studio</div><div class="fileSize">Website</div></div></div>
-            <div class="fileRow"><div class="fileIco"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-cards"/></svg></div><div><div class="fileName">Book a 30-min call</div><div class="fileSize">Calendly</div></div></div>
-          </div>
-          <div class="pHint">Tap any link, or scan the card to save it all at once.</div>
-          <div class="pActions" aria-hidden="true">
-            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-qr"/></svg>Show QR</span>
-            <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-file"/></svg>Send</span>
-          </div>
-        </div>
-      </div></div>
+        <img class="devshot" src="media/shots/card.webp" width="380" height="700"
+             loading="lazy" decoding="async" alt="The JPMorgan Chase card in Handleshare, showing the photo, name, title and the QR code that carries the whole contact.">
+      </div>
+  </div>
+</section>
+
+<!-- 2 · CONTROL -->
+<section class="feat flip">
+  <div class="wrap">
+    <div class="phoneWrap">
+      <img class="devshot" src="media/shots/share.webp" width="380" height="700"
+           loading="lazy" decoding="async"
+           alt="The Handleshare share sheet: a live preview of the card at the top, and switches below for profile photo, job title, pronouns, phone, email and each link.">
+    </div>
+    <div class="copy">
+      <p class="kicker">Control</p>
+      <h2>Decide what goes out, every time</h2>
+      <p>A recruiter gets your phone number. A conference badge scan does not. Flick a switch and the preview at the top of the sheet updates before you send anything — so you always see exactly what the other person will receive.</p>
+      <ul class="bul">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Per-share, not per-card — the same card, two different handshakes</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-file"/></svg>Send as a contact card, a rich digital card, or both</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>Nothing leaves your phone until you tap Share</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<!-- 2 · WI-FI -->
-<section class="feat flip">
+<!-- 3 · WI-FI -->
+<section class="feat">
   <div class="wrap">
-    <div class="phoneWrap">
-      <div class="phone"><div class="notch"></div><div class="screen">
-        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
-        <div class="pbody">
-          <div class="wifiCard">
-            <div class="wifiIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-wifi"/></svg></div>
-            <div><div class="wifiName">Studio Guest</div><div class="wifiSub">WPA2 · Scan to join</div></div>
-          </div>
-          <div class="qr" aria-hidden="true">
-            <svg viewBox="0 0 29 29" fill="#12002b" shape-rendering="crispEdges">
-              <path d="M0.5 0.5h6v6h-6zM22.5 0.5h6v6h-6zM0.5 22.5h6v6h-6z" fill="none" stroke="#12002b" stroke-width="1"/>
-              <rect x="2" y="2" width="3" height="3"/><rect x="24" y="2" width="3" height="3"/><rect x="2" y="24" width="3" height="3"/>
-              <path d="M10 1h1v1h-1zM12 1h1v1h-1zM9 3h1v1H9zM13 3h1v1h-1zM11 5h1v1h-1zM1 10h1v1H1zM3 10h1v1H3zM5 12h1v1H5zM0 14h1v1H0zM9 10h1v1H9zM12 11h1v1h-1zM14 9h1v1h-1zM10 13h1v1h-1zM13 14h1v1h-1zM17 10h1v1h-1zM19 12h1v1h-1zM21 10h1v1h-1zM18 14h1v1h-1zM24 10h1v1h-1zM26 12h1v1h-1zM23 14h1v1h-1zM27 11h1v1h-1zM9 18h1v1H9zM12 17h1v1h-1zM14 19h1v1h-1zM10 21h1v1h-1zM13 23h1v1h-1zM11 26h1v1h-1zM17 18h1v1h-1zM20 19h1v1h-1zM18 22h1v1h-1zM21 24h1v1h-1zM16 26h1v1h-1zM24 18h1v1h-1zM26 20h1v1h-1zM23 23h1v1h-1zM27 25h1v1h-1zM25 27h1v1h-1zM16 3h1v1h-1zM18 5h1v1h-1zM20 3h1v1h-1zM3 17h1v1H3zM5 19h1v1H5zM1 21h1v1H1zM4 24h1v1H4zM6 27h1v1H6z"/>
-            </svg>
-          </div>
-          <div class="pHint">Guests point their camera and they're on.</div>
-          <div class="pActions" aria-hidden="true">
-            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-wifi"/></svg>Show code</span>
-            <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-cards"/></svg>Edit</span>
-          </div>
-        </div>
-      </div></div>
-    </div>
     <div class="copy">
       <p class="kicker">Wi-Fi</p>
       <h2>Stop spelling out your password</h2>
@@ -398,12 +416,21 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>Stays on your device and your private iCloud</li>
       </ul>
     </div>
+    <div class="phoneWrap">
+      <img class="devshot" src="media/shots/wifi.webp" width="380" height="700"
+           loading="lazy" decoding="async"
+           alt="An illustration of a Handleshare Wi-Fi card: the network name Studio Guest, WPA2, and a code guests scan to join.">
+    </div>
   </div>
 </section>
 
-<!-- 3 · SCAN -->
-<section class="feat">
+<!-- 4 · SCAN -->
+<section class="feat flip">
   <div class="wrap">
+    <div class="phoneWrap">
+        <img class="devshot" src="media/shots/scanner.webp" width="380" height="700"
+             loading="lazy" decoding="async" alt="Handleshare's scanner screen: scan QR codes anywhere and get a safe preview before anything opens.">
+      </div>
     <div class="copy">
       <p class="kicker">Scan</p>
       <h2>Paper cards, digitised on the spot</h2>
@@ -413,46 +440,12 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cards"/></svg>Scan history you can search later</li>
       </ul>
     </div>
-    <div class="phoneWrap">
-      <div class="phone"><div class="notch"></div><div class="screen">
-        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
-        <div class="pbody">
-          <div class="scanFrame" aria-hidden="true">
-            <div class="scanLine"></div>
-            <div class="sk" style="width:62%"></div>
-            <div class="sk" style="width:44%;opacity:.7"></div>
-            <div class="sk" style="width:78%;opacity:.5"></div>
-            <div class="sk" style="width:52%;opacity:.4;margin-bottom:0"></div>
-          </div>
-          <div class="chips" aria-hidden="true"><span class="chip">Name</span><span class="chip">Phone</span><span class="chip">Email</span></div>
-          <div class="pHint">Save to Contacts in one tap.</div>
-          <div class="pActions" aria-hidden="true">
-            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Save contact</span>
-          </div>
-        </div>
-      </div></div>
-    </div>
   </div>
 </section>
 
-<!-- 4 · PROFILES -->
-<section class="feat flip">
+<!-- 5 · PROFILES -->
+<section class="feat">
   <div class="wrap">
-    <div class="phoneWrap">
-      <div class="phone"><div class="notch"></div><div class="screen">
-        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
-        <div class="pbody" style="justify-content:flex-start;padding-top:30px;gap:9px">
-          <div class="pName" style="align-self:flex-start;margin-bottom:3px">Your cards</div>
-          <div class="profRow sel"><div class="profDot" style="background:linear-gradient(150deg,#C21FD4,#7100BA)" aria-hidden="true">W</div><div><div class="profName">Work</div><div class="profSub">Design Engineer · Studio</div></div></div>
-          <div class="profRow"><div class="profDot" style="background:linear-gradient(150deg,#4A01BB,#240153)" aria-hidden="true">S</div><div><div class="profName">Side project</div><div class="profSub">Founder · Foliàire</div></div></div>
-          <div class="profRow"><div class="profDot" style="background:linear-gradient(150deg,#9D47D5,#4A01BB)" aria-hidden="true">P</div><div><div class="profName">Personal</div><div class="profSub">School &amp; family</div></div></div>
-          <div class="pHint" style="margin-top:5px">Each card has its own QR code, links and files.</div>
-          <div class="pActions" aria-hidden="true">
-            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-cards"/></svg>New card</span>
-          </div>
-        </div>
-      </div></div>
-    </div>
     <div class="copy">
       <p class="kicker">Profiles</p>
       <h2>A different card for every room</h2>
@@ -462,12 +455,20 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg>Switch in a tap — each keeps its own QR code</li>
       </ul>
     </div>
+    <div class="phoneWrap">
+        <img class="devshot" src="media/shots/switcher.webp" width="380" height="700"
+             loading="lazy" decoding="async" alt="The Handleshare profile switcher listing seven cards — Stella’s Dad, Product Designer, Foliàire Studio, Handleshare, JPMorgan Chase, Airbnb Hosts and DailyDo.">
+      </div>
   </div>
 </section>
 
-<!-- 5 · ATTACHMENTS -->
-<section class="feat">
+<!-- 6 · ATTACHMENTS -->
+<section class="feat flip">
   <div class="wrap">
+    <div class="phoneWrap">
+        <img class="devshot" src="media/shots/files.webp" width="380" height="700"
+             loading="lazy" decoding="async" alt="The Handleshare share sheet scrolled to Attachments, with a résumé PDF selected and a live preview of exactly what the recipient will get.">
+      </div>
     <div class="copy">
       <p class="kicker">Files</p>
       <h2>Send the portfolio with the card</h2>
@@ -477,26 +478,10 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Choose what's included, share by share</li>
       </ul>
     </div>
-    <div class="phoneWrap">
-      <div class="phone"><div class="notch"></div><div class="screen">
-        <div class="st"><span>9:41</span><svg viewBox="0 0 34 12" fill="#fff" aria-hidden="true"><rect x="0" y="3" width="4" height="6" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="20" y="1" width="12" height="7" rx="2"/></svg></div>
-        <div class="pbody" style="justify-content:flex-start;padding-top:30px;gap:9px">
-          <div class="pName" style="align-self:flex-start;margin-bottom:3px">Attachments</div>
-          <div class="fileRow"><div class="fileIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-file"/></svg></div><div><div class="fileName">Portfolio 2026.pdf</div><div class="fileSize">8.4 MB</div></div></div>
-          <div class="fileRow"><div class="fileIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-file"/></svg></div><div><div class="fileName">Rate card.pdf</div><div class="fileSize">412 KB</div></div></div>
-          <div class="fileRow"><div class="fileIco" aria-hidden="true"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-file"/></svg></div><div><div class="fileName">Studio photos.zip</div><div class="fileSize">31.2 MB</div></div></div>
-          <div class="pHint" style="margin-top:5px">Big files go out through Mail Drop automatically.</div>
-          <div class="pActions" aria-hidden="true">
-            <span class="pBtn primary"><svg viewBox="0 0 24 24"><use href="#i-file"/></svg>Add file</span>
-            <span class="pBtn"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Choose</span>
-          </div>
-        </div>
-      </div></div>
-    </div>
   </div>
 </section>
 
-<!-- 6 · PRICING -->
+<!-- 7 · PRICING -->
 <section class="pricing" id="pricing">
   <div class="wrap">
     <h2>Free for most people. Paid only if you need more cards.</h2>
@@ -526,7 +511,7 @@
   </div>
 </section>
 
-<!-- 6 · PRIVACY BAND -->
+<!-- 8 · PRIVACY BAND -->
 <section class="band">
   <div class="wrap">
     <h2>No account. No servers. No tracking.</h2>
@@ -581,7 +566,15 @@
       v.addEventListener('error', fallBack);
       var src = v.querySelector('source');
       if(src) src.addEventListener('error', fallBack);
-      v.addEventListener('loadeddata', function(){ v.play().catch(function(){}); }, {once:true});
+      // A looping capture of someone swiping through cards is exactly the kind
+      // of motion "reduce motion" is asking us to stop. Hold on the poster and
+      // hand over the controls instead of autoplaying at them.
+      var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(calm){
+        v.removeAttribute('autoplay'); v.removeAttribute('loop'); v.controls = true;
+      }else{
+        v.addEventListener('loadeddata', function(){ v.play().catch(function(){}); }, {once:true});
+      }
     }
   })();
 </script>
