@@ -63,10 +63,12 @@
     max-width:530px;margin:0 auto 32px;text-wrap:pretty}
 
   .heroStage{max-width:340px;margin:0 auto 30px}
-  .herovid{display:none;width:100%;border-radius:34px;outline:1px solid var(--outline);outline-offset:-1px;
+  .herovid{display:block;width:100%;border-radius:34px;outline:1px solid var(--outline);outline-offset:-1px;
     box-shadow:0 28px 60px -18px rgba(0,0,0,.85),0 0 70px -14px rgba(157,71,213,.4)}
-  .herovid.on{display:block}
-  .heroStage.hasVideo .phoneWrap{display:none}
+  /* The CSS device mock is only a fallback; JS restores it if the video fails. */
+  .heroStage .phoneWrap{display:none}
+  .heroStage.videoFailed .phoneWrap{display:flex}
+  .heroStage.videoFailed .herovid{display:none}
 
   .badgeRow{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 0 22px}
   .appstore img{height:54px;width:auto;display:block}
@@ -521,14 +523,15 @@
     if(box && window.lottie){
       lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:true,path:'logo.json'});
     }
-    // Swap the CSS phone mock for the pitch video, but only once it really loads.
+    // The video leads; the CSS mock is the safety net if it cannot play.
     var v = document.getElementById('heroVid'), stage = document.getElementById('heroStage');
     if(v && stage){
-      v.addEventListener('loadeddata', function(){
-        v.classList.add('on');
-        stage.classList.add('hasVideo');
-        v.play().catch(function(){});
-      }, {once:true});
+      var fallBack = function(){ stage.classList.add('videoFailed'); };
+      v.addEventListener('error', fallBack);
+      if(v.querySelector('source')) v.querySelector('source').addEventListener('error', fallBack);
+      v.addEventListener('loadeddata', function(){ v.play().catch(function(){}); }, {once:true});
+      // Nothing decoded after a fair wait: assume it is not coming.
+      setTimeout(function(){ if(v.readyState === 0) fallBack(); }, 6000);
     }
   })();
 </script>
