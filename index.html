@@ -63,7 +63,8 @@
     max-width:530px;margin:0 auto 32px;text-wrap:pretty}
 
   .heroStage{max-width:340px;margin:0 auto 30px}
-  .herovid{display:none;width:100%;border-radius:26px;outline:1px solid var(--outline);outline-offset:-1px}
+  .herovid{display:none;width:100%;border-radius:34px;outline:1px solid var(--outline);outline-offset:-1px;
+    box-shadow:0 28px 60px -18px rgba(0,0,0,.85),0 0 70px -14px rgba(157,71,213,.4)}
   .herovid.on{display:block}
   .heroStage.hasVideo .phoneWrap{display:none}
 
@@ -255,8 +256,9 @@
 
   <div class="heroStage" id="heroStage">
     <!-- Hero video: drops in automatically once media/pitch-hero.mp4 exists. -->
-    <video class="herovid" id="heroVid" muted loop playsinline preload="metadata"
-           aria-label="A silent tour of Handleshare: building a card, showing its QR code, sharing Wi-Fi, and scanning a paper business card.">
+    <video class="herovid" id="heroVid" muted loop playsinline autoplay preload="auto"
+           poster="media/pitch-poster.jpg"
+           aria-label="A silent 17-second capture of Handleshare on iPhone: a contact card with its QR code, swiping between cards for different links, then the profile switcher opening to seven cards and changing to another.">
       <source src="media/pitch-hero.mp4" type="video/mp4">
     </video>
     <div class="phoneWrap">
