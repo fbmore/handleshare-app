@@ -73,7 +73,7 @@
   .badgeRow{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 0 22px}
   .appstore img{height:54px;width:auto;display:block}
   .appstore{display:inline-block;border-radius:10px}
-  /* Not yet on the App Store: badge is presentational until the ID exists. */
+  /* Kept for the pre-launch state; the badge is a live link now. */
   .appstore[aria-disabled="true"]{opacity:.42;filter:grayscale(1);cursor:default}
   .storenote{margin:0;font-size:13px;font-weight:300;color:var(--muted)}
 
@@ -299,7 +299,7 @@
     <!-- Hero video: drops in automatically once media/pitch-hero.mp4 exists. -->
     <video class="herovid" id="heroVid" muted loop playsinline autoplay preload="auto"
            poster="media/pitch-poster.jpg"
-           aria-label="A silent 19-second capture of Handleshare on iPhone: swiping up on a card to reveal the next one and switching to it, the profile switcher opening to seven cards, then the share sheet with contact details being switched on and off.">
+           aria-label="A silent 26-second capture of Handleshare on iPhone: swiping up on a card to reveal the next one and switching to it, the profile switcher opening to six cards, then the share sheet with contact details being switched on and off, and the scanner switching between QR and text.">
       <source src="media/pitch-hero.mp4" type="video/mp4">
     </video>
     <div class="phoneWrap">
@@ -333,10 +333,10 @@
   </div>
 
   <div class="badgeRow">
-    <span class="appstore" aria-disabled="true" role="img" aria-label="Coming soon to the App Store">
+    <a class="appstore" href="https://apps.apple.com/app/id581295018" aria-label="Download Handleshare on the App Store">
       <img src="appstore-badge.svg" alt="" aria-hidden="true">
-    </span>
-    <p class="storenote">Coming soon for iPhone · Requires iOS 18.6 or later</p>
+    </a>
+    <p class="storenote">Download on the App Store · iPhone · Requires iOS 18.6 or later</p>
   </div>
 
   <div class="ctarow">
@@ -352,11 +352,11 @@
 <section class="tourband">
   <div class="wrap">
     <p class="kicker">The tour</p>
-    <h2>Forty-eight seconds, no narration</h2>
+    <h2>Fifty-one seconds, no narration</h2>
     <p>Everything below, recorded on a real iPhone from real cards — swiping between them, choosing what each person gets, and the codes that carry it.</p>
     <video class="tourvid" controls playsinline preload="none"
            poster="media/pitch-16x9-poster.jpg"
-           aria-label="A silent 48-second tour of Handleshare: switching between cards, the profile switcher, choosing which details and files to share, and a QR code for every link.">
+           aria-label="A silent 51-second tour of Handleshare: switching between cards, the profile switcher, choosing which details and files to share, a QR code for every link, and the scanner in QR and text modes.">
       <source src="media/handleshare-pitch.mp4" type="video/mp4">
     </video>
   </div>
@@ -413,6 +413,7 @@
       <p>Handed a paper business card? Point the camera at it and Handleshare reads the details and offers to save them to Contacts. Your scan history keeps everything you've collected in one place.</p>
       <ul class="bul">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-scan"/></svg>Reads names, numbers, emails and addresses</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>QR codes too — one scanner, a QR / Text toggle, and a safe preview before anything opens</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cards"/></svg>Scan history you can search later</li>
       </ul>
     </div>
