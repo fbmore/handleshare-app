@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>A card shared with you — Handleshare</title>
+<meta name="robots" content="noindex">
+<!-- Static fallback for link previews. Per-link og tags (name, photo) come
+     from the /v/<id> worker route; this covers direct view.html links, whose
+     #hash never reaches a server. -->
+<meta property="og:title" content="A card shared with you">
+<meta property="og:description" content="A Handleshare card with files you can download — the link expires on its own.">
+<meta property="og:image" content="https://handleshare.com/logo.png">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root{
+    --ink:#ffffff;
+    --muted:rgba(255,255,255,.52);
+    --muted2:rgba(255,255,255,.74);
+    --canvas:#0d0020;
+    --violet:#7100BA;
+    --magenta:#C21FD4;
+    --glow:#9D47D5;
+    --surface:rgba(255,255,255,.055);
+    --surface2:rgba(255,255,255,.09);
+    --line:rgba(255,255,255,.1);
+    /* Pure white at 10%: a tinted outline picks up the canvas and reads as dirt. */
+    --outline:oklch(1 0 0 / 0.1);
+    /* Two layers: contact + ambient. One big blur reads as a smudge. */
+    --lift:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -12px rgba(0,0,0,.55);
+    --ease:cubic-bezier(0.2,0,0,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  body{
+    margin:0;background:var(--canvas);color:var(--ink);
+    font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    line-height:1.55;
+    background-image:radial-gradient(58% 30% at 50% 0%,rgba(113,0,186,.26),transparent 72%);
+    background-repeat:no-repeat;
+  }
+  img{max-width:100%}
+  :focus-visible{outline:2px solid var(--glow);outline-offset:3px;border-radius:8px}
+  .wrap{max-width:880px;margin:0 auto;padding:28px 20px 96px}
+
+  nav{font-size:15px;margin-bottom:28px}
+  nav a{color:var(--muted2);text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+    min-height:44px;border-radius:12px;
+    transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
+  nav a:hover{color:var(--ink)}
+  nav img{width:26px;height:26px;border-radius:7px;outline:1px solid var(--outline);outline-offset:-1px}
+
+  /* who it's from */
+  .card{display:flex;gap:16px;align-items:flex-start;padding:20px;
+    /* Outer 20 = inner 12 + 8 padding, so the corners stay concentric. */
+    border-radius:20px;background:var(--surface);box-shadow:var(--lift);margin-bottom:28px}
+  .avatar{flex:none;width:64px;height:64px;border-radius:50%;overflow:hidden;
+    background:linear-gradient(150deg,var(--violet),var(--magenta));
+    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;
+    outline:1px solid var(--outline);outline-offset:-1px}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  h1{font-size:25px;line-height:1.22;font-weight:600;margin:2px 0 2px;text-wrap:balance}
+  .role{color:var(--muted2);font-size:15px;margin:0;text-wrap:pretty}
+  .note{margin:10px 0 0;color:var(--muted2);font-size:15px;white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
+
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 26px}
+  .btn{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:600;font-size:15px;
+    min-height:44px;padding:0 20px;border-radius:14px;display:inline-flex;align-items:center;gap:9px;
+    color:var(--ink);background:var(--surface2);text-decoration:none;
+    transition-property:background-color,scale;transition-duration:140ms;transition-timing-function:var(--ease)}
+  .btn:hover{background:rgba(255,255,255,.14)}
+  .btn:active{scale:0.96}
+  .btn.primary{background:linear-gradient(150deg,var(--violet),var(--magenta));box-shadow:var(--lift)}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn[disabled]{opacity:.55;cursor:default;scale:1}
+
+  .count{color:var(--muted);font-size:14px;margin:0 0 14px;font-variant-numeric:tabular-nums}
+
+  /* the files */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  .tile{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;
+    background:var(--surface);box-shadow:var(--lift)}
+  .thumb{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.04);position:relative}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;
+    outline:1px solid var(--outline);outline-offset:-1px}
+  .glyph{font-size:38px;line-height:1}
+  .ext{position:absolute;bottom:8px;right:10px;font-size:11px;font-weight:700;letter-spacing:.08em;
+    color:var(--muted2)}
+  .name{padding:12px 12px 0;font-size:14px;font-weight:600;overflow-wrap:anywhere;text-wrap:pretty}
+  .size{padding:2px 12px 0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tile .btn{margin:12px;justify-content:center;border-radius:12px;font-size:14px}
+
+  .state{padding:64px 0;text-align:center;color:var(--muted2);font-size:17px;text-wrap:balance}
+  .state strong{display:block;color:var(--ink);font-size:20px;margin-bottom:6px}
+
+  footer{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+  footer a{color:var(--muted2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center;
+    transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
+  footer a:hover{color:var(--ink)}
+  .spacer{flex:1}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:0ms !important}
+    .btn:active{scale:1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="https://handleshare.com/"><img src="logo.png" alt="">Handleshare</a>
+  </nav>
+
+  <main id="content">
+    <div class="state" id="state">Loading…</div>
+  </main>
+
+  <footer>
+    <span id="expiry"></span>
+    <span class="spacer"></span>
+    <a href="mailto:support@handleshare.com?subject=Report%20a%20shared%20Handleshare%20card">Report this card</a>
+    <a href="https://handleshare.com/">Get Handleshare</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var CONTAINER = 'iCloud.com.fbmore.Handleshare';
+  var WORKER = 'https://handleshare-views.fbmore.workers.dev';
+  // CloudKit Web Services API tokens: public by design, origin-locked to
+  // handleshare.com in CloudKit Console. Production is tried first so a live
+  // link never pays for a development round-trip.
+  var ENVS = [
+    { env: 'production',  token: 'REPLACE_WITH_PRODUCTION_API_TOKEN' },
+    { env: 'development', token: 'REPLACE_WITH_DEVELOPMENT_API_TOKEN' }
+  ];
+
+  var content = document.getElementById('content');
+  var expiryEl = document.getElementById('expiry');
+  var recordName = (location.hash || '').replace(/^#/, '').split('/')[0];
+
+  function state(html){
+    content.innerHTML = '<div class="state">' + html + '</div>';
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  }
+  function clean(v, max){
+    var s = typeof v === 'string' ? v.replace(/\s+/g,' ').trim() : '';
+    return max && s.length > max ? s.slice(0, max) : s;
+  }
+  function bytes(n){
+    if(!n && n !== 0) return '';
+    if(n < 1000) return n + ' B';
+    if(n < 1e6) return Math.round(n / 1000) + ' KB';
+    return (Math.round(n / 1e5) / 10) + ' MB';
+  }
+  function extOf(name){
+    var m = /\.([A-Za-z0-9]{1,6})$/.exec(name || '');
+    return m ? m[1].toUpperCase() : '';
+  }
+
+  if(!/^[A-Za-z0-9-]{10,100}$/.test(recordName)){
+    state('<strong>This link is incomplete.</strong>Ask the sender for the full address.');
+    return;
+  }
+
+  lookup(0);
+
+  function lookup(i){
+    if(i >= ENVS.length){
+      state('<strong>This link has expired</strong>or the card was taken down.');
+      return;
+    }
+    var e = ENVS[i];
+    fetch('https://api.apple-cloudkit.com/database/1/' + CONTAINER + '/' + e.env + '/public/records/lookup?ckAPIToken=' + e.token, {
+      method: 'POST',
+      body: JSON.stringify({ records: [{ recordName: recordName }] })
+    }).then(function(r){ return r.json(); }).then(function(resp){
+      var rec = resp.records && resp.records[0];
+      if(!rec || rec.serverErrorCode || !rec.fields){ lookup(i + 1); return; }
+      // Rendering separately: a bug in render() is not a missing record, and
+      // must never be reported to a visitor as an expired link.
+      try { render(rec); }
+      catch(err){
+        console.error('render failed', err);
+        state('<strong>Something went wrong showing this card.</strong>Try reloading the page.');
+      }
+    }).catch(function(){ lookup(i + 1); });
+  }
+
+  function render(rec){
+    var f = rec.fields || {};
+    var expiresAt = f.expiresAt ? new Date(f.expiresAt.value) : null;
+    if(expiresAt && expiresAt < new Date()){
+      state('<strong>This link has expired.</strong>The files are no longer stored.');
+      return;
+    }
+
+    var who = clean(f.senderName && f.senderName.value, 60);
+    var role = clean(f.senderRole && f.senderRole.value, 90);
+    var note = clean(f.message && f.message.value, 600);
+    var vcard = (f.vcard && f.vcard.value) || '';
+    var photo = (f.senderPhoto && f.senderPhoto.value && f.senderPhoto.value.downloadURL || '').replace('${f}', 'sender.jpg');
+    var items = (f.items && f.items.value) || [];
+    var names = (f.itemNames && f.itemNames.value) || [];
+    var types = (f.itemTypes && f.itemTypes.value) || [];
+
+    var files = items.map(function(it, i){
+      var name = clean(names[i]) || ('file-' + (i + 1));
+      var type = types[i] || 'file';
+      if(['pdf','image','file'].indexOf(type) < 0) type = 'file';
+      return {
+        name: name,
+        type: type,
+        size: (it && it.size) || (it && it.value && it.value.size) || 0,
+        url: (it.downloadURL || (it.value && it.value.downloadURL) || '').replace('${f}', encodeURIComponent(name))
+      };
+    }).filter(function(x){ return x.url; });
+
+    document.title = (who ? who + '’s card' : 'A card shared with you') + ' — Handleshare';
+
+    var initials = (who || '?').split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
+    var html = '<section class="card">' +
+      '<span class="avatar" aria-hidden="true">' + (photo ? '<img src="' + esc(photo) + '" alt="">' : esc(initials)) + '</span>' +
+      '<div>' +
+        '<h1>' + esc(who || 'A card shared with you') + '</h1>' +
+        (role ? '<p class="role">' + esc(role) + '</p>' : '') +
+        (note ? '<p class="note">' + esc(note) + '</p>' : '') +
+      '</div></section>';
+
+    html += '<div class="actions">';
+    if(vcard) html += '<button class="btn primary" id="vcf" type="button">Add to contacts</button>';
+    if(files.length > 1) html += '<button class="btn" id="all" type="button">Download all (' + files.length + ')</button>';
+    html += '</div>';
+
+    if(files.length){
+      html += '<p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p><div class="grid">';
+      files.forEach(function(file, i){
+        var glyph = file.type === 'pdf' ? '📄' : file.type === 'image' ? '🖼️' : '📎';
+        html += '<article class="tile">' +
+          '<div class="thumb">' +
+            (file.type === 'image'
+              ? '<img src="' + esc(file.url) + '" alt="' + esc(file.name) + '" loading="lazy">'
+              : '<span class="glyph" aria-hidden="true">' + glyph + '</span><span class="ext">' + esc(extOf(file.name)) + '</span>') +
+          '</div>' +
+          '<p class="name">' + esc(file.name) + '</p>' +
+          (file.size ? '<p class="size">' + bytes(file.size) + '</p>' : '') +
+          '<button class="btn" type="button" data-i="' + i + '">Download</button>' +
+        '</article>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p class="count">This card has no files attached.</p>';
+    }
+
+    content.innerHTML = html;
+
+    if(expiresAt){
+      expiryEl.textContent = 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    var vcf = document.getElementById('vcf');
+    if(vcf) vcf.addEventListener('click', function(){
+      var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+      saveBlob(blob, (who ? who.replace(/[^\w\- ]+/g, '').trim() || 'contact' : 'contact') + '.vcf');
+    });
+
+    content.addEventListener('click', function(ev){
+      var btn = ev.target.closest('button[data-i]');
+      if(!btn) return;
+      download(files[parseInt(btn.dataset.i, 10)], btn);
+    });
+
+    var all = document.getElementById('all');
+    if(all) all.addEventListener('click', function(){
+      all.disabled = true;
+      var label = all.textContent;
+      var n = 0;
+      (function next(){
+        if(n >= files.length){ all.disabled = false; all.textContent = label; return; }
+        all.textContent = 'Downloading ' + (n + 1) + ' of ' + files.length + '…';
+        download(files[n++]).then(next, next);
+      })();
+    });
+
+    // View count: a number against a random id. No IP, no cookie, no profile.
+    try { fetch(WORKER + '/hit/' + encodeURIComponent(recordName)); } catch(err) {}
+  }
+
+  // iCloud's asset CDN sends no CORS header, so a cross-origin fetch needs the
+  // worker relay. A direct navigation is the fallback when even that fails.
+  function download(file, btn){
+    var original = btn && btn.textContent;
+    if(btn){ btn.disabled = true; btn.textContent = 'Downloading…'; }
+    return fetch(WORKER + '/asset?url=' + encodeURIComponent(file.url))
+      .then(function(r){ if(!r.ok) throw new Error('relay ' + r.status); return r.blob(); })
+      .then(function(blob){ saveBlob(blob, file.name); })
+      .catch(function(){ window.open(file.url, '_blank', 'noopener'); })
+      .then(function(){ if(btn){ btn.disabled = false; btn.textContent = original; } });
+  }
+
+  function saveBlob(blob, filename){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+})();
+</script>
+</body>
+</html>

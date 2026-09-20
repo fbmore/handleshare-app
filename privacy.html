@@ -32,6 +32,16 @@
     <p>Nothing leaves your device unless you initiate it. When you share your card — via QR code, the iOS share sheet, email, or Messages — the information travels directly from your device to the person you're sharing with. There is no Handleshare server in between. QR codes (including Wi-Fi codes) are generated on your device.</p>
     <p>A note on Wi-Fi: your network name and password are part of your card data only because you typed them in, and they're shared only when you present the Wi-Fi QR code or explicitly include them in a share.</p>
 
+    <h2>Card links</h2>
+    <p>A card link publishes the files you picked, plus your name, title and photo, to the app's own iCloud database — container <code>iCloud.com.fbmore.Handleshare</code> — at a random, unguessable web address. Anyone with the address can open the page and download those files; nobody else can find it, and the page asks search engines not to index it.</p>
+    <ul>
+      <li><strong>Only what you chose.</strong> The files you ticked, your name, title and company, your photo, your note, and a contact card. Nothing else from your profile is uploaded — not your address, not your other cards.</li>
+      <li><strong>It expires.</strong> Free links last 7 days; Pro can pick 7, 30 or 90. When a link expires the uploaded copies are deleted, and you can stop any link earlier from Plan &amp; Settings → Card Links, which deletes them straight away.</li>
+      <li><strong>View counts.</strong> The page pings a small counter we run on Cloudflare, which stores only the random link id and a number. No IP addresses, no cookies, no profiles.</li>
+      <li><strong>Downloads</strong> come straight from Apple's iCloud. When a browser blocks that direct fetch, the bytes pass through a relay we run on Cloudflare; it streams them through and keeps nothing.</li>
+      <li><strong>Reporting.</strong> Every shared page carries a "Report this card" link that emails us the address so we can delete it.</li>
+    </ul>
+
     <h2>Backups you create</h2>
     <p>Handleshare can save a backup file containing everything above — profiles, attachments, scans and photos — into its own folder on your iPhone, visible in Files under On My iPhone → Handleshare → Backups. It is created on your device and stays there unless you move or share it yourself. Anyone with access to that file can read its contents, so treat it like any other copy of your personal data: keep it somewhere you trust, and delete backups you no longer need.</p>
 
