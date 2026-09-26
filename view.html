@@ -107,6 +107,45 @@
   footer a:hover{color:var(--ink)}
   .spacer{flex:1}
 
+  /* contact card sheet */
+  .sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+  .sheet[hidden]{display:none}
+  .scrim{position:absolute;inset:0;background:rgba(6,0,16,.62);opacity:0;
+    transition-property:opacity;transition-duration:200ms;transition-timing-function:ease-out}
+  .panel{position:relative;width:100%;max-width:440px;max-height:92vh;overflow:auto;
+    background:#170830;border-radius:28px 28px 0 0;box-shadow:var(--lift);
+    padding:12px 12px calc(16px + env(safe-area-inset-bottom));
+    opacity:0;transform:translateY(12px);
+    transition-property:opacity,transform;transition-duration:200ms,240ms;transition-timing-function:ease-out,var(--ease)}
+  .sheet.open .scrim{opacity:1}
+  .sheet.open .panel{opacity:1;transform:none}
+  @media (min-width:600px){
+    .sheet{align-items:center;padding:24px}
+    .panel{border-radius:28px;padding-bottom:16px}
+  }
+  /* Outer 28 = inner 16 + 12 padding. */
+  .cc-head{position:relative;border-radius:16px;padding:28px 20px 22px;text-align:center;
+    background:linear-gradient(150deg,rgba(113,0,186,.55),rgba(194,31,212,.35))}
+  .cc-head .avatar{width:96px;height:96px;margin:0 auto 14px;font-size:34px}
+  .cc-head h2{font-size:23px;line-height:1.22;font-weight:600;margin:0;text-wrap:balance}
+  .cc-head p{margin:4px 0 0;color:var(--muted2);font-size:15px;text-wrap:pretty}
+  .close{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;border-radius:22px;
+    background:transparent;color:var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition-property:background-color,color;transition-duration:140ms;transition-timing-function:var(--ease)}
+  .close:hover{background:rgba(255,255,255,.1);color:var(--ink)}
+  .cc-rows{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:2px}
+  .cc-row{display:flex;align-items:center;gap:14px;min-height:60px;padding:8px 12px;border-radius:16px;
+    color:var(--ink);text-decoration:none;
+    transition-property:background-color;transition-duration:140ms;transition-timing-function:var(--ease)}
+  .cc-row:hover{background:var(--surface2)}
+  .cc-ic{flex:none;width:36px;height:36px;border-radius:18px;background:var(--surface2);
+    display:flex;align-items:center;justify-content:center;color:var(--glow)}
+  .cc-ic svg{width:18px;height:18px}
+  .cc-txt{min-width:0;display:flex;flex-direction:column}
+  .cc-txt small{font-size:12px;color:var(--muted);line-height:1.3}
+  .cc-txt span{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+  .cc-add{width:100%;justify-content:center;margin-top:12px;min-height:50px;border-radius:16px}
+
   @media (prefers-reduced-motion:reduce){
     *{transition-duration:0ms !important}
     .btn:active{scale:1}
@@ -240,7 +279,7 @@
       '</div></section>';
 
     html += '<div class="actions">';
-    if(vcard) html += '<button class="btn primary" id="vcf" type="button">Add to contacts</button>';
+    if(vcard) html += '<button class="btn primary" id="viewcard" type="button" aria-haspopup="dialog">View contact card</button>';
     if(files.length > 1) html += '<button class="btn" id="all" type="button">Download all (' + files.length + ')</button>';
     html += '</div>';
 
@@ -272,10 +311,9 @@
       expiryEl.textContent = 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
-    var vcf = document.getElementById('vcf');
-    if(vcf) vcf.addEventListener('click', function(){
-      var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-      saveBlob(blob, (who ? who.replace(/[^\w\- ]+/g, '').trim() || 'contact' : 'contact') + '.vcf');
+    var viewcard = document.getElementById('viewcard');
+    if(viewcard) viewcard.addEventListener('click', function(){
+      openContactCard({ who: who, role: role, photo: photo, initials: initials, vcard: vcard }, viewcard);
     });
 
     content.addEventListener('click', function(ev){
@@ -382,6 +420,128 @@
       })
       .catch(function(){ /* keep the glyph */ })
       .then(function(){ if(doc) doc.destroy(); });
+  }
+
+  // ---- Contact card -------------------------------------------------------
+  // Built from the link's vCard, which the app writes with only the fields the
+  // sender chose to share. Every value is a real link: tel:, mailto:, the
+  // page itself, or a map search for the address.
+
+  var ICONS = {
+    phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+    mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+    pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
+  };
+  function icon(name){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+  }
+
+  function parseVCard(text){
+    var out = { tels: [], emails: [], urls: [], adr: '' };
+    var unesc = function(v){ return v.replace(/\\n/gi, ' ').replace(/\\([,;\\])/g, '$1').trim(); };
+    (text || '').replace(/\r?\n[ \t]/g, '').split(/\r?\n/).forEach(function(line){
+      var i = line.indexOf(':');
+      if(i < 1) return;
+      var name = line.slice(0, i).split(';')[0].toUpperCase();
+      var raw = line.slice(i + 1).trim();
+      if(!raw) return;
+      if(name === 'TEL'){
+        // The app writes "TEL;CELL:+1" when the number wasn't shared.
+        if(raw.replace(/\D/g, '').length >= 5) out.tels.push(unesc(raw));
+      } else if(name === 'EMAIL'){
+        if(raw.indexOf('@') > 0) out.emails.push(unesc(raw));
+      } else if(name === 'URL'){
+        out.urls.push(unesc(raw));
+      } else if(name === 'ADR'){
+        var parts = raw.split(';').slice(2).map(unesc).filter(Boolean);
+        if(parts.length) out.adr = parts.join(', ');
+      }
+    });
+    return out;
+  }
+
+  function prettyPhone(p){
+    var d = p.replace(/\D/g, '');
+    if(/^\+?1/.test(p) && d.length === 11) return '+1 (' + d.slice(1, 4) + ') ' + d.slice(4, 7) + '-' + d.slice(7);
+    return p;
+  }
+
+  // Only web links become hrefs, so a pasted "javascript:" can never run.
+  function safeURL(u){
+    var withScheme = /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : 'https://' + u;
+    try {
+      var parsed = new URL(withScheme);
+      return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.href : null;
+    } catch(err){ return null; }
+  }
+
+  function row(kind, label, value, href, external){
+    return '<li><a class="cc-row" href="' + esc(href) + '"' + (external ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' +
+      '<span class="cc-ic">' + icon(kind) + '</span>' +
+      '<span class="cc-txt"><small>' + esc(label) + '</small><span>' + esc(value) + '</span></span></a></li>';
+  }
+
+  var sheetEl = null, lastTrigger = null;
+
+  function closeContactCard(){
+    if(!sheetEl || sheetEl.hidden) return;
+    sheetEl.classList.remove('open');
+    document.documentElement.style.overflow = '';
+    var el = sheetEl;
+    setTimeout(function(){ el.hidden = true; }, 200);
+    if(lastTrigger) lastTrigger.focus();
+  }
+
+  function openContactCard(p, trigger){
+    lastTrigger = trigger;
+    var c = parseVCard(p.vcard);
+    var rows = '';
+    c.tels.forEach(function(t){ rows += row('phone', 'Phone', prettyPhone(t), 'tel:' + t.replace(/[^\d+]/g, ''), false); });
+    c.emails.forEach(function(e){ rows += row('mail', 'Email', e, 'mailto:' + e, false); });
+    c.urls.forEach(function(u){
+      var href = safeURL(u);
+      if(href) rows += row('link', 'Link', u.replace(/^https?:\/\//i, '').replace(/\/$/, ''), href, true);
+    });
+    if(c.adr) rows += row('pin', 'Address', c.adr, 'https://maps.apple.com/?q=' + encodeURIComponent(c.adr), true);
+
+    if(!sheetEl){
+      sheetEl = document.createElement('div');
+      sheetEl.className = 'sheet';
+      sheetEl.hidden = true;
+      document.body.appendChild(sheetEl);
+      sheetEl.addEventListener('click', function(ev){
+        if(ev.target.closest('[data-close]')) closeContactCard();
+        if(ev.target.closest('#ccAdd')) saveContact(sheetEl.dataset.who, p.vcard);
+      });
+      document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') closeContactCard(); });
+    }
+    sheetEl.dataset.who = p.who || '';
+    sheetEl.innerHTML =
+      '<div class="scrim" data-close></div>' +
+      '<div class="panel" role="dialog" aria-modal="true" aria-labelledby="ccName">' +
+        '<div class="cc-head">' +
+          '<button class="close" type="button" data-close aria-label="Close">' + icon('x') + '</button>' +
+          '<span class="avatar" aria-hidden="true">' + (p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : esc(p.initials)) + '</span>' +
+          '<h2 id="ccName">' + esc(p.who || 'Contact') + '</h2>' +
+          (p.role ? '<p>' + esc(p.role) + '</p>' : '') +
+        '</div>' +
+        (rows ? '<ul class="cc-rows">' + rows + '</ul>' : '') +
+        '<button class="btn primary cc-add" id="ccAdd" type="button">Add to contacts</button>' +
+      '</div>';
+    sheetEl.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    // One frame at the start state, so the enter transition runs.
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      sheetEl.classList.add('open');
+      sheetEl.querySelector('.close').focus();
+    }); });
+  }
+
+  function saveContact(who, vcard){
+    var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    saveBlob(blob, (who ? who.replace(/[^\w\- ]+/g, '').trim() || 'contact' : 'contact') + '.vcf');
   }
 
   function saveBlob(blob, filename){
