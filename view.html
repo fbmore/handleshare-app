@@ -86,6 +86,11 @@
   .thumb img{width:100%;height:100%;object-fit:cover;display:block;
     outline:1px solid var(--outline);outline-offset:-1px}
   .glyph{font-size:38px;line-height:1}
+  /* PDF first page, drawn by pdf.js once the tile scrolls into view */
+  .thumb .page{position:absolute;inset:0;object-position:top center;background:#fff;
+    opacity:0;transition-property:opacity;transition-duration:200ms;transition-timing-function:ease-out}
+  .thumb .page.ready{opacity:1}
+  .thumb .page.ready ~ .ext{color:#fff;background:rgba(0,0,0,.55);padding:3px 7px;border-radius:6px}
   .ext{position:absolute;bottom:8px;right:10px;font-size:11px;font-weight:700;letter-spacing:.08em;
     color:var(--muted2)}
   .name{padding:12px 12px 0;font-size:14px;font-weight:600;overflow-wrap:anywhere;text-wrap:pretty}
@@ -244,7 +249,7 @@
       files.forEach(function(file, i){
         var glyph = file.type === 'pdf' ? '📄' : file.type === 'image' ? '🖼️' : '📎';
         html += '<article class="tile">' +
-          '<div class="thumb">' +
+          '<div class="thumb"' + (file.type === 'pdf' ? ' data-pdf="' + i + '"' : '') + '>' +
             (file.type === 'image'
               ? '<img src="' + esc(file.url) + '" alt="' + esc(file.name) + '" loading="lazy">'
               : '<span class="glyph" aria-hidden="true">' + glyph + '</span><span class="ext">' + esc(extOf(file.name)) + '</span>') +
@@ -260,6 +265,8 @@
     }
 
     content.innerHTML = html;
+
+    previewPDFs(files);
 
     if(expiresAt){
       expiryEl.textContent = 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
@@ -298,11 +305,83 @@
   function download(file, btn){
     var original = btn && btn.textContent;
     if(btn){ btn.disabled = true; btn.textContent = 'Downloading…'; }
-    return fetch(WORKER + '/asset?url=' + encodeURIComponent(file.url))
-      .then(function(r){ if(!r.ok) throw new Error('relay ' + r.status); return r.blob(); })
+    return fetchBlob(file)
       .then(function(blob){ saveBlob(blob, file.name); })
       .catch(function(){ window.open(file.url, '_blank', 'noopener'); })
       .then(function(){ if(btn){ btn.disabled = false; btn.textContent = original; } });
+  }
+
+  function fetchBlob(file){
+    if(file.blob) return Promise.resolve(file.blob);
+    return fetch(WORKER + '/asset?url=' + encodeURIComponent(file.url))
+      .then(function(r){ if(!r.ok) throw new Error('relay ' + r.status); return r.blob(); })
+      .then(function(blob){ file.blob = blob; return blob; });
+  }
+
+  // First-page previews for PDFs. pdf.js loads only if the card has a PDF,
+  // each file only when its tile nears the viewport, and anything that fails
+  // (old browser, huge or broken file) just keeps the glyph.
+  var PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/';
+  var PREVIEW_MAX_BYTES = 25 * 1024 * 1024;
+  var pdfjsLoad = null;
+
+  function loadPdfjs(){
+    if(!pdfjsLoad){
+      pdfjsLoad = import(PDFJS + 'pdf.min.mjs').then(function(lib){
+        lib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.mjs';
+        return lib;
+      });
+    }
+    return pdfjsLoad;
+  }
+
+  function previewPDFs(files){
+    var thumbs = Array.prototype.slice.call(content.querySelectorAll('.thumb[data-pdf]'))
+      .filter(function(el){
+        var f = files[parseInt(el.dataset.pdf, 10)];
+        return f && (!f.size || f.size <= PREVIEW_MAX_BYTES);
+      });
+    if(!thumbs.length) return;
+    if(!('IntersectionObserver' in window)){ thumbs.forEach(function(el){ renderFirstPage(el, files); }); return; }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        io.unobserve(e.target);
+        renderFirstPage(e.target, files);
+      });
+    }, { rootMargin: '300px 0px' });
+    thumbs.forEach(function(el){ io.observe(el); });
+  }
+
+  function renderFirstPage(thumb, files){
+    var file = files[parseInt(thumb.dataset.pdf, 10)];
+    var doc = null;
+    Promise.all([loadPdfjs(), fetchBlob(file).then(function(b){ return b.arrayBuffer(); })])
+      .then(function(r){
+        return r[0].getDocument({ data: new Uint8Array(r[1]), isEvalSupported: false }).promise;
+      })
+      .then(function(d){ doc = d; return d.getPage(1); })
+      .then(function(page){
+        var base = page.getViewport({ scale: 1 });
+        var width = Math.min(thumb.clientWidth * (window.devicePixelRatio || 1), 1200);
+        var viewport = page.getViewport({ scale: width / base.width });
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise
+          .then(function(){ return new Promise(function(res){ canvas.toBlob(res, 'image/jpeg', 0.85); }); });
+      })
+      .then(function(jpeg){
+        if(!jpeg) return;
+        var img = document.createElement('img');
+        img.className = 'page';
+        img.alt = 'First page of ' + file.name;
+        img.onload = function(){ img.classList.add('ready'); };
+        img.src = URL.createObjectURL(jpeg);
+        thumb.insertBefore(img, thumb.querySelector('.ext'));
+      })
+      .catch(function(){ /* keep the glyph */ })
+      .then(function(){ if(doc) doc.destroy(); });
   }
 
   function saveBlob(blob, filename){
