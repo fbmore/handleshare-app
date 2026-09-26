@@ -553,6 +553,7 @@
     if(btn) btn.disabled = true;
     fetch(WORKER + '/asset?url=' + encodeURIComponent(photoURL))
       .then(function(r){ if(!r.ok) throw new Error('photo ' + r.status); return r.blob(); })
+      .then(shrinkPhoto)
       .then(function(blob){
         return new Promise(function(res, rej){
           var fr = new FileReader();
@@ -570,6 +571,20 @@
       })
       .catch(function(){ done(text); })
       .then(function(){ if(btn) btn.disabled = false; });
+  }
+
+  // Contacts shows photos small; 256 px keeps the .vcf around 20 KB instead of
+  // carrying a full-resolution portrait. Falls back to the original blob.
+  function shrinkPhoto(blob){
+    if(!window.createImageBitmap) return blob;
+    return createImageBitmap(blob).then(function(bmp){
+      var side = 256, scale = Math.min(1, side / Math.max(bmp.width, bmp.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * scale);
+      c.height = Math.round(bmp.height * scale);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      return new Promise(function(res){ c.toBlob(function(b){ res(b || blob); }, 'image/jpeg', 0.85); });
+    }).catch(function(){ return blob; });
   }
 
   function saveBlob(blob, filename){
