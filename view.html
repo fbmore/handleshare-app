@@ -513,7 +513,8 @@
       document.body.appendChild(sheetEl);
       sheetEl.addEventListener('click', function(ev){
         if(ev.target.closest('[data-close]')) closeContactCard();
-        if(ev.target.closest('#ccAdd')) saveContact(sheetEl.dataset.who, p.vcard);
+        var add = ev.target.closest('#ccAdd');
+        if(add) saveContact(sheetEl.dataset.who, p.vcard, p.photo, add);
       });
       document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') closeContactCard(); });
     }
@@ -539,9 +540,36 @@
     }); });
   }
 
-  function saveContact(who, vcard){
-    var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-    saveBlob(blob, (who ? who.replace(/[^\w\- ]+/g, '').trim() || 'contact' : 'contact') + '.vcf');
+  // The stored vCard carries no photo (the app keeps base64 out of vCards
+  // because they also become QR codes). Contacts only saves a photo that is
+  // embedded, never one behind a URL, so fetch it and inline it here. Adds
+  // FN too: Android and Outlook refuse a card without it.
+  function saveContact(who, vcard, photoURL, btn){
+    var name = (who ? who.replace(/[^\w\- ]+/g, '').trim() : '') || 'contact';
+    var text = vcard.replace(/\r?\n/g, '\r\n');
+    if(who && !/^FN[:;]/m.test(text)) text = text.replace(/^(N[:;].*)$/m, '$1\r\nFN:' + who.replace(/[\r\n]/g, ' '));
+    var done = function(t){ saveBlob(new Blob([t], { type: 'text/vcard;charset=utf-8' }), name + '.vcf'); };
+    if(!photoURL || /^PHOTO[:;]/m.test(text)){ done(text); return; }
+    if(btn) btn.disabled = true;
+    fetch(WORKER + '/asset?url=' + encodeURIComponent(photoURL))
+      .then(function(r){ if(!r.ok) throw new Error('photo ' + r.status); return r.blob(); })
+      .then(function(blob){
+        return new Promise(function(res, rej){
+          var fr = new FileReader();
+          fr.onload = function(){ res(String(fr.result).split(',')[1] || ''); };
+          fr.onerror = rej;
+          fr.readAsDataURL(blob);
+        });
+      })
+      .then(function(b64){
+        if(!b64){ done(text); return; }
+        // RFC 2425 folding: 75-character lines, continuations start with a space.
+        var line = 'PHOTO;ENCODING=b;TYPE=JPEG:' + b64, folded = line.slice(0, 75);
+        for(var i = 75; i < line.length; i += 74) folded += '\r\n ' + line.slice(i, i + 74);
+        done(text.replace(/END:VCARD\s*$/, folded + '\r\nEND:VCARD\r\n'));
+      })
+      .catch(function(){ done(text); })
+      .then(function(){ if(btn) btn.disabled = false; });
   }
 
   function saveBlob(blob, filename){
