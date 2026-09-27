@@ -16,28 +16,29 @@
   <main id="main">
     <p class="kicker">Handleshare</p>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: 13 September 2026</p>
+    <p class="updated">Last updated: 27 September 2026</p>
 
-    <p>Handleshare is a digital business card that you fill in yourself and share on your own terms. Everything you put in the app stays on your device and, if you use iCloud, in your own private iCloud account. We never see it.</p>
+    <p>Handleshare is a digital business card that you fill in yourself and share on your own terms. Everything you put in the app stays on your device and, if you use iCloud, in your own private iCloud account, which we can't read. The one exception is a card link you choose to create, described below.</p>
 
     <div class="card accent">
-      <p><strong>In short</strong> — No accounts. No tracking. No analytics. No advertising. No servers of ours. Your card is shared only when you choose to share it, with the person you choose to share it with.</p>
+      <p><strong>In short</strong> — No accounts. No tracking. No analytics. No advertising. Your cards never sit on a server of ours. Your card is shared only when you choose to share it, and a card link publishes only what you pick, until it expires.</p>
     </div>
 
     <h2>What you put into Handleshare</h2>
     <p>Handleshare stores the information you choose to add to your card(s): your name, pronouns, title, company, phone, email, postal address, web and social links, booking and payment links, a short intro and bio, a profile photo, Wi-Fi network details (name, security type, and password), and any file attachments you add (for example a portfolio, menu, or resume).</p>
-    <p>All of this is stored locally on your device. If you're signed in to iCloud, it is also synced to your own private iCloud account (Apple's CloudKit private database, container <code>iCloud.com.fbmore.Handleshare</code>) so your cards appear across your devices and survive a reinstall. The developer of Handleshare has no access to this data, and it is never placed in any public or shared database.</p>
+    <p>All of this is stored locally on your device. If you're signed in to iCloud, it is also synced to your own private iCloud account (Apple's CloudKit private database, container <code>iCloud.com.fbmore.Handleshare</code>) so your cards appear across your devices and survive a reinstall. The developer of Handleshare has no access to this data. Only a card link you create (below) places anything in the app's shared database.</p>
 
     <h2>Sharing is always your call</h2>
     <p>Nothing leaves your device unless you initiate it. When you share your card — via QR code, the iOS share sheet, email, or Messages — the information travels directly from your device to the person you're sharing with. There is no Handleshare server in between. QR codes (including Wi-Fi codes) are generated on your device.</p>
+    <p>The exception is a card link. You can create one yourself, and when the files you share by email or the share sheet add up to more than 20&nbsp;MB, Handleshare sends them as a card link instead, telling you before it uploads. If you can't or don't want to make a link, you can send the files instead.</p>
     <p>A note on Wi-Fi: your network name and password are part of your card data only because you typed them in, and they're shared only when you present the Wi-Fi QR code or explicitly include them in a share.</p>
 
     <h2>Card links</h2>
-    <p>A card link publishes the files you picked, plus your name, title and photo, to the app's own iCloud database — container <code>iCloud.com.fbmore.Handleshare</code> — at a random, unguessable web address. Anyone with the address can open the page and download those files; nobody else can find it, and the page asks search engines not to index it.</p>
+    <p>A card link publishes the files you picked, plus a contact card with the details you've chosen to share, to the app's own iCloud database — container <code>iCloud.com.fbmore.Handleshare</code> — at a random, unguessable web address. Anyone with the address can open the page and download those files. The records can't be listed or searched: only our link server can read them, one address at a time, and the page asks search engines not to index it. Apple stores the files; our link server runs on Cloudflare.</p>
     <ul>
-      <li><strong>Only what you chose.</strong> The files you ticked, your name, title and company, your photo, your note, and a contact card. Nothing else from your profile is uploaded — not your address, not your other cards.</li>
-      <li><strong>It expires.</strong> Free links last 7 days; Pro can pick 7, 30 or 90. When a link expires the uploaded copies are deleted, and you can stop any link earlier from Plan &amp; Settings → Card Links, which deletes them straight away.</li>
-      <li><strong>View counts.</strong> The page pings a small counter we run on Cloudflare, which stores only the random link id and a number. No IP addresses, no cookies, no profiles.</li>
+      <li><strong>Only what you chose.</strong> The files you ticked, your note, and the card details you have switched on in the share sheet — which can include your name, title and company, photo, phone, email, links and postal address — shown on the page and offered as a contact card. Anything you switched off, and your other cards, stay private.</li>
+      <li><strong>It expires.</strong> Free links last 7 days; Pro can pick 7, 30 or 90. When a link expires it stops opening right away, and the uploaded copies are deleted within a day. You can stop any link earlier from Plan &amp; Settings → Card Links, which deletes them straight away.</li>
+      <li><strong>View counts.</strong> The page pings a small counter we run on Cloudflare, which stores the random link id and a number, for up to 400 days. To keep storage in check and spot abuse, it also keeps daily totals per uploader, identified only by a short one-way hash of an iCloud record id — never your name, Apple ID or email. No IP addresses, no cookies, no profiles.</li>
       <li><strong>Downloads</strong> come straight from Apple's iCloud. When a browser blocks that direct fetch, the bytes pass through a relay we run on Cloudflare; it streams them through and keeps nothing.</li>
       <li><strong>Reporting.</strong> Every shared page carries a "Report this card" link that emails us the address so we can delete it.</li>
     </ul>
@@ -74,7 +75,7 @@
       <li>No analytics, usage tracking, crash reporting, or advertising SDKs.</li>
       <li>No advertising identifier, and no tracking across other companies' apps or websites.</li>
       <li>No location data.</li>
-      <li>No card content — names, numbers, photos, attachments, Wi-Fi credentials — is ever sent to the developer.</li>
+      <li>No card content — names, numbers, photos, attachments, Wi-Fi credentials — is sent to the developer, except what you publish in a card link. Wi-Fi details are never part of a card link.</li>
     </ul>
 
     <h2>Third-party links</h2>
