@@ -64,6 +64,8 @@
   .role{color:var(--muted2);font-size:15px;margin:0;text-wrap:pretty}
   .note{margin:10px 0 0;color:var(--muted2);font-size:15px;white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
 
+  .preview{margin:0 0 16px;padding:10px 14px;border-radius:12px;font-size:14px;color:var(--muted2);
+    background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);text-wrap:pretty}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 26px}
   .btn{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:600;font-size:15px;
     min-height:44px;padding:0 20px;border-radius:14px;display:inline-flex;align-items:center;gap:9px;
@@ -181,6 +183,9 @@
   var content = document.getElementById('content');
   var expiryEl = document.getElementById('expiry');
   var recordName = (location.hash || '').replace(/^#/, '').split('/')[0];
+  // "#<id>/preview" is the sender checking their own link from the app: same
+  // page, marked as a preview, and not counted as a view.
+  var isPreview = /\/preview$/i.test(location.hash || '');
 
   function state(html){
     content.innerHTML = '<div class="state">' + html + '</div>';
@@ -263,7 +268,9 @@
     document.title = (who ? who + '’s card' : 'A card shared with you') + ' — Handleshare';
 
     var initials = (who || '?').split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
-    var html = '<section class="card">' +
+    var html = (isPreview
+      ? '<p class="preview">Preview — this is what people see. Your visit isn’t counted as a view.</p>'
+      : '') + '<section class="card">' +
       '<span class="avatar" aria-hidden="true">' + (photo ? '<img src="' + esc(photo) + '" alt="">' : esc(initials)) + '</span>' +
       '<div>' +
         '<h1>' + esc(who || 'A card shared with you') + '</h1>' +
@@ -328,7 +335,9 @@
     });
 
     // View count: a number against a random id. No IP, no cookie, no profile.
-    try { fetch(WORKER + '/hit/' + encodeURIComponent(recordName)); } catch(err) {}
+    if(!isPreview){
+      try { fetch(WORKER + '/hit/' + encodeURIComponent(recordName)); } catch(err) {}
+    }
   }
 
   // iCloud's asset CDN sends no CORS header, so a cross-origin fetch needs the
