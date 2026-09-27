@@ -81,6 +81,13 @@
 
   /* the files */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  /* Desktop: one file gets the full width (16:9 so it isn't a giant square),
+     several files sit three to a row. Phones keep the auto-fill columns. */
+  @media (min-width:720px){
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.one{grid-template-columns:1fr}
+    .grid.one .thumb{aspect-ratio:16/9}
+  }
   .tile{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;
     background:var(--surface);box-shadow:var(--lift)}
   .thumb{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
@@ -284,7 +291,7 @@
     html += '</div>';
 
     if(files.length){
-      html += '<p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p><div class="grid">';
+      html += '<p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p><div class="grid' + (files.length === 1 ? ' one' : '') + '">';
       files.forEach(function(file, i){
         var glyph = file.type === 'pdf' ? '📄' : file.type === 'image' ? '🖼️' : '📎';
         html += '<article class="tile">' +
