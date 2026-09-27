@@ -537,7 +537,10 @@
     try { history.pushState({ hsViewer: 1 }, ''); V.pushed = true; } catch(e){}
     el.hidden = false;
     show(cur);
-    requestAnimationFrame(function(){ el.classList.add('open'); });
+    // Flush styles so the fade runs from 0, without depending on a frame
+    // callback (hidden or throttled tabs never run requestAnimationFrame).
+    void el.offsetWidth;
+    el.classList.add('open');
     el.querySelector('[data-lb="close"]').focus();
   }
 
