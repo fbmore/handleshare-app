@@ -812,11 +812,11 @@
       '</div>';
     sheetEl.hidden = false;
     document.documentElement.style.overflow = 'hidden';
-    // One frame at the start state, so the enter transition runs.
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){
-      sheetEl.classList.add('open');
-      sheetEl.querySelector('.close').focus();
-    }); });
+    // Flush the start state so the enter transition runs, without waiting
+    // on a frame callback (hidden or throttled tabs never run them).
+    void sheetEl.offsetWidth;
+    sheetEl.classList.add('open');
+    sheetEl.querySelector('.close').focus();
   }
 
   // The stored vCard carries no photo (the app keeps base64 out of vCards
