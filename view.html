@@ -174,15 +174,9 @@
 (function(){
   'use strict';
 
-  var CONTAINER = 'iCloud.com.fbmore.Handleshare';
+  // The worker reads the one record this link names, with its server key.
+  // The page holds no CloudKit token: the public API can't read or list links.
   var WORKER = 'https://handleshare-views.fbmore.workers.dev';
-  // CloudKit Web Services API tokens: public by design, origin-locked to
-  // handleshare.com in CloudKit Console. Production is tried first so a live
-  // link never pays for a development round-trip.
-  var ENVS = [
-    { env: 'production',  token: '6920cd6d47f917091a83eb94ce370b8a5e5aa442be7002a34a4109e31a276cc9' },
-    { env: 'development', token: '54f7aa2de5451985754058562e9df62905e37dfe07073312590a56dfc2f67f07' }
-  ];
 
   var content = document.getElementById('content');
   var expiryEl = document.getElementById('expiry');
@@ -214,20 +208,17 @@
     return;
   }
 
-  lookup(0);
+  lookup();
 
-  function lookup(i){
-    if(i >= ENVS.length){
-      state('<strong>This link has expired</strong>or the card was taken down.');
-      return;
-    }
-    var e = ENVS[i];
-    fetch('https://api.apple-cloudkit.com/database/1/' + CONTAINER + '/' + e.env + '/public/records/lookup?ckAPIToken=' + e.token, {
-      method: 'POST',
-      body: JSON.stringify({ records: [{ recordName: recordName }] })
-    }).then(function(r){ return r.json(); }).then(function(resp){
-      var rec = resp.records && resp.records[0];
-      if(!rec || rec.serverErrorCode || !rec.fields){ lookup(i + 1); return; }
+  function lookup(){
+    var gone = function(){ state('<strong>This link has expired</strong>or the card was taken down.'); };
+    fetch(WORKER + '/card/' + encodeURIComponent(recordName), { cache: 'no-store' })
+      .then(function(r){
+        if(r.status === 404) return null;
+        if(!r.ok) throw new Error('card ' + r.status);
+        return r.json();
+      }).then(function(rec){
+      if(!rec || !rec.fields){ gone(); return; }
       // Rendering separately: a bug in render() is not a missing record, and
       // must never be reported to a visitor as an expired link.
       try { render(rec); }
@@ -235,7 +226,9 @@
         console.error('render failed', err);
         state('<strong>Something went wrong showing this card.</strong>Try reloading the page.');
       }
-    }).catch(function(){ lookup(i + 1); });
+    }).catch(function(){
+      state('<strong>Couldn’t load this card.</strong>Check your connection and reload the page.');
+    });
   }
 
   function render(rec){
