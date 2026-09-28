@@ -22,6 +22,14 @@
     --violet:#7100BA;
     --magenta:#C21FD4;
     --glow:#9D47D5;
+    /* Theme-derived (defaults = the Handleshare purple). applyTheme() swaps
+       all of these for the sender's card theme. */
+    --on-accent:#ffffff;
+    --canvas-glow:rgba(113,0,186,.26);
+    --panel:#170830;
+    --head-a:rgba(113,0,186,.55);
+    --head-b:rgba(194,31,212,.35);
+    --shade:6,0,16;
     --surface:rgba(255,255,255,.055);
     --surface2:rgba(255,255,255,.09);
     --line:rgba(255,255,255,.1);
@@ -37,7 +45,7 @@
     margin:0;background:var(--canvas);color:var(--ink);
     font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
     line-height:1.55;
-    background-image:radial-gradient(58% 30% at 50% 0%,rgba(113,0,186,.26),transparent 72%);
+    background-image:radial-gradient(58% 30% at 50% 0%,var(--canvas-glow),transparent 72%);
     background-repeat:no-repeat;
   }
   img{max-width:100%}
@@ -56,7 +64,7 @@
     /* Outer 20 = inner 12 + 8 padding, so the corners stay concentric. */
     border-radius:20px;background:var(--surface);box-shadow:var(--lift);margin-bottom:28px}
   .avatar{flex:none;width:64px;height:64px;border-radius:50%;overflow:hidden;
-    background:linear-gradient(150deg,var(--violet),var(--magenta));
+    background:linear-gradient(150deg,var(--violet),var(--magenta));color:var(--on-accent);
     display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;
     outline:1px solid var(--outline);outline-offset:-1px}
   .avatar img{width:100%;height:100%;object-fit:cover;display:block}
@@ -73,7 +81,7 @@
     transition-property:background-color,scale;transition-duration:140ms;transition-timing-function:var(--ease)}
   .btn:hover{background:rgba(255,255,255,.14)}
   .btn:active{scale:0.96}
-  .btn.primary{background:linear-gradient(150deg,var(--violet),var(--magenta));box-shadow:var(--lift)}
+  .btn.primary{background:linear-gradient(150deg,var(--violet),var(--magenta));color:var(--on-accent);box-shadow:var(--lift)}
   .btn.primary:hover{filter:brightness(1.08)}
   .btn[disabled]{opacity:.55;cursor:default;scale:1}
 
@@ -119,10 +127,10 @@
   /* contact card sheet */
   .sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
   .sheet[hidden]{display:none}
-  .scrim{position:absolute;inset:0;background:rgba(6,0,16,.62);opacity:0;
+  .scrim{position:absolute;inset:0;background:rgba(var(--shade),.62);opacity:0;
     transition-property:opacity;transition-duration:200ms;transition-timing-function:ease-out}
   .panel{position:relative;width:100%;max-width:440px;max-height:92vh;overflow:auto;
-    background:#170830;border-radius:28px 28px 0 0;box-shadow:var(--lift);
+    background:var(--panel);border-radius:28px 28px 0 0;box-shadow:var(--lift);
     padding:12px 12px calc(16px + env(safe-area-inset-bottom));
     opacity:0;transform:translateY(12px);
     transition-property:opacity,transform;transition-duration:200ms,240ms;transition-timing-function:ease-out,var(--ease)}
@@ -134,7 +142,7 @@
   }
   /* Outer 28 = inner 16 + 12 padding. */
   .cc-head{position:relative;border-radius:16px;padding:28px 20px 22px;text-align:center;
-    background:linear-gradient(150deg,rgba(113,0,186,.55),rgba(194,31,212,.35))}
+    background:linear-gradient(150deg,var(--head-a),var(--head-b))}
   .cc-head .avatar{width:96px;height:96px;margin:0 auto 14px;font-size:34px}
   .cc-head h2{font-size:23px;line-height:1.22;font-weight:600;margin:0;text-wrap:balance}
   .cc-head p{margin:4px 0 0;color:var(--muted2);font-size:15px;text-wrap:pretty}
@@ -168,13 +176,13 @@
   .tile audio{display:block;width:calc(100% - 24px);margin:10px 12px 0;height:40px}
 
   /* full-screen viewer (after PhotoSendr's lightbox) */
-  .lb{position:fixed;inset:0;height:100dvh;z-index:60;background:rgba(6,0,16,.97);
+  .lb{position:fixed;inset:0;height:100dvh;z-index:60;background:rgba(var(--shade),.97);
     display:flex;flex-direction:column;overscroll-behavior:contain;
     opacity:0;transition-property:opacity;transition-duration:180ms;transition-timing-function:ease-out}
   .lb[hidden]{display:none}
   .lb.open{opacity:1}
   .lb-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
-    background:linear-gradient(rgba(6,0,16,.9),rgba(6,0,16,0))}
+    background:linear-gradient(rgba(var(--shade),.9),rgba(var(--shade),0))}
   .lb-count{font-size:13px;color:var(--muted2);font-variant-numeric:tabular-nums;min-width:40px}
   .lb-title{flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .lb-btn{appearance:none;border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:var(--ink);
@@ -247,6 +255,47 @@
   function esc(s){
     return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   }
+  // The sender's card theme, as two "#RRGGBB" strings from the app. Anything
+  // else (older links, junk) keeps the default purple. Same rules as the app's
+  // AppTheme: text on the gradient is black or white by its worse end, and the
+  // accent is lightened until it holds 4.5:1 on the dark canvas.
+  function applyTheme(p, s){
+    var HEX = /^#[0-9a-f]{6}$/i;
+    if(!HEX.test(p || '') || !HEX.test(s || '')) return;
+    function rgb(h){ return [1,3,5].map(function(i){ return parseInt(h.substr(i, 2), 16); }); }
+    function lum(c){
+      var l = c.map(function(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2];
+    }
+    function contrast(a, b){ return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); }
+    function mix(c, d, t){ return c.map(function(v, i){ return Math.round(v + (d[i] - v) * t); }); }
+    function css(c){ return 'rgb(' + c.join(',') + ')'; }
+    function rgba(c, a){ return 'rgba(' + c.join(',') + ',' + a + ')'; }
+
+    var P = rgb(p), S = rgb(s);
+    var ends = [lum(P), lum(S)];
+    // Tint the page from the brighter color: a theme that starts near black
+    // would otherwise give a plain black page with none of its color.
+    var B = ends[0] >= ends[1] ? P : S;
+    var canvas = mix(B, [8, 8, 12], 0.9);
+    var onWhite = Math.min(contrast(1, ends[0]), contrast(1, ends[1]));
+    var onBlack = Math.min(contrast(0, ends[0]), contrast(0, ends[1]));
+    var glow = B, t = 0;
+    while(t < 1 && contrast(lum(glow), lum(canvas)) < 4.5){ t += 0.05; glow = mix(B, [255, 255, 255], t); }
+
+    var root = document.documentElement.style;
+    root.setProperty('--violet', css(P));
+    root.setProperty('--magenta', css(S));
+    root.setProperty('--glow', css(glow));
+    root.setProperty('--on-accent', onBlack > onWhite ? '#000' : '#fff');
+    root.setProperty('--canvas', css(canvas));
+    root.setProperty('--canvas-glow', rgba(B, .26));
+    root.setProperty('--panel', css(mix(B, [16, 16, 20], 0.84)));
+    root.setProperty('--head-a', rgba(P, .55));
+    root.setProperty('--head-b', rgba(S, .35));
+    root.setProperty('--shade', mix(B, [0, 0, 0], 0.93).join(','));
+  }
+
   function clean(v, max){
     var s = typeof v === 'string' ? v.replace(/\s+/g,' ').trim() : '';
     return max && s.length > max ? s.slice(0, max) : s;
@@ -306,6 +355,7 @@
     var items = (f.items && f.items.value) || [];
     var names = (f.itemNames && f.itemNames.value) || [];
     var types = (f.itemTypes && f.itemTypes.value) || [];
+    applyTheme(f.themePrimary && f.themePrimary.value, f.themeSecondary && f.themeSecondary.value);
 
     var files = items.map(function(it, i){
       var name = clean(names[i]) || ('file-' + (i + 1));
