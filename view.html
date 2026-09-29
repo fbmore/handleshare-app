@@ -912,6 +912,11 @@
   function saveContact(who, vcard, photoURL, btn){
     var name = (who ? who.replace(/[^\w\- ]+/g, '').trim() : '') || 'contact';
     var text = vcard.replace(/\r?\n/g, '\r\n');
+    // Older app builds wrote "TEL;CELL:+1" for a phone that was switched off.
+    // Drop phone lines with no real number so Contacts doesn't save "+1".
+    text = text.split('\r\n').filter(function(l){
+      return !/^TEL[;:]/i.test(l) || l.slice(l.indexOf(':') + 1).replace(/\D/g, '').length >= 5;
+    }).join('\r\n');
     if(who && !/^FN[:;]/m.test(text)) text = text.replace(/^(N[:;].*)$/m, '$1\r\nFN:' + who.replace(/[\r\n]/g, ' '));
     var done = function(t){ saveBlob(new Blob([t], { type: 'text/vcard;charset=utf-8' }), name + '.vcf'); };
     if(!photoURL || /^PHOTO[:;]/m.test(text)){ done(text); return; }
