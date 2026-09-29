@@ -37,6 +37,9 @@ nav a{color:var(--muted2);text-decoration:none;display:inline-flex;align-items:c
   transition-property:color;transition-duration:150ms;transition-timing-function:var(--ease)}
 nav a:hover{color:var(--ink)}
 nav img{width:26px;height:26px;border-radius:7px;outline:1px solid oklch(1 0 0 / 0.1);outline-offset:-1px}
+.logo-lottie{flex:none;display:inline-block;width:26px;height:26px;position:relative}
+.logo-lottie img{position:absolute;inset:0}
+.logo-lottie svg{display:block}
 
 .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--glow);
   font-weight:600;margin:30px 0 0}

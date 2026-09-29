@@ -58,6 +58,9 @@
     transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
   nav a:hover{color:var(--ink)}
   nav img{width:26px;height:26px;border-radius:7px;outline:1px solid var(--outline);outline-offset:-1px}
+  .logo-lottie{flex:none;display:inline-block;width:26px;height:26px;position:relative}
+  .logo-lottie img{position:absolute;inset:0}
+  .logo-lottie svg{display:block}
 
   /* who it's from */
   .card{display:flex;gap:16px;align-items:flex-start;padding:20px;
@@ -123,6 +126,13 @@
     transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
   footer a:hover{color:var(--ink)}
   .spacer{flex:1}
+  /* Phones: one item per line. Side by side, the two links wrap onto
+     separate lines at unpredictable points anyway. */
+  @media (max-width:599px){
+    footer{flex-direction:column;align-items:flex-start;gap:0}
+    footer #expiry{margin-bottom:6px}
+    .spacer{display:none}
+  }
 
   /* contact card sheet */
   .sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
@@ -222,7 +232,7 @@
 <body>
 <div class="wrap">
   <nav>
-    <a href="https://handleshare.com/"><img src="logo.png" alt="">Handleshare</a>
+    <a href="https://handleshare.com/"><span class="logo-lottie" aria-hidden="true"><img src="logo.png" alt=""></span>Handleshare</a>
   </nav>
 
   <main id="content">
@@ -954,5 +964,7 @@
   }
 })();
 </script>
+<script src="lottie_light.min.js" defer></script>
+<script src="logo.js" defer></script>
 </body>
 </html>
