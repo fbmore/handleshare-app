@@ -331,7 +331,12 @@
 
   lookup();
 
-  function lookup(){
+  // The app shares a link as soon as it has an address and uploads right
+  // after, so a fresh link can be opened a few seconds before its card
+  // exists. Treat "not found" as "on its way" for about 30 seconds before
+  // calling it gone.
+  function lookup(attempt){
+    attempt = attempt || 0;
     var gone = function(){ state('<strong>This link has expired</strong>or the card was taken down.'); };
     fetch(WORKER + '/card/' + encodeURIComponent(recordName), { cache: 'no-store' })
       .then(function(r){
@@ -339,7 +344,15 @@
         if(!r.ok) throw new Error('card ' + r.status);
         return r.json();
       }).then(function(rec){
-      if(!rec || !rec.fields){ gone(); return; }
+      if(!rec || !rec.fields){
+        if(attempt < 15){
+          state('<strong>Getting the card ready…</strong>It was just shared and is still uploading.');
+          setTimeout(function(){ lookup(attempt + 1); }, 2000);
+        } else {
+          gone();
+        }
+        return;
+      }
       // Rendering separately: a bug in render() is not a missing record, and
       // must never be reported to a visitor as an expired link.
       try { render(rec); }
