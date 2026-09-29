@@ -151,6 +151,9 @@
     transition-property:background-color,color;transition-duration:140ms;transition-timing-function:var(--ease)}
   .close:hover{background:rgba(255,255,255,.1);color:var(--ink)}
   .cc-rows{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:2px}
+  /* Card-only page: the rows sit on the page under the card, in a surface of
+     their own. Outer 20 = inner 16 + 4 padding. */
+  .cc-rows.inline{margin:-12px 0 24px;padding:4px;border-radius:20px;background:var(--surface);box-shadow:var(--lift)}
   .cc-row{display:flex;align-items:center;gap:14px;min-height:60px;padding:8px 12px;border-radius:16px;
     color:var(--ink);text-decoration:none;
     transition-property:background-color;transition-duration:140ms;transition-timing-function:var(--ease)}
@@ -384,8 +387,17 @@
         (note ? '<p class="note">' + esc(note) + '</p>' : '') +
       '</div></section>';
 
+    // No files: the card is the whole page, so lay its details out here
+    // rather than behind a button.
+    var cardOnly = !files.length && vcard;
+    if(cardOnly){
+      var rows = contactRows(vcard);
+      if(rows) html += '<ul class="cc-rows inline">' + rows + '</ul>';
+    }
+
     html += '<div class="actions">';
-    if(vcard) html += '<button class="btn primary" id="viewcard" type="button" aria-haspopup="dialog">View contact card</button>';
+    if(cardOnly) html += '<button class="btn primary" id="addcontact" type="button">Add to contacts</button>';
+    else if(vcard) html += '<button class="btn primary" id="viewcard" type="button" aria-haspopup="dialog">View contact card</button>';
     if(files.length > 1) html += '<button class="btn" id="all" type="button">Download all (' + files.length + ')</button>';
     html += '</div>';
 
@@ -416,8 +428,6 @@
         '</article>';
       });
       html += '</div>';
-    } else {
-      html += '<p class="count">This card has no files attached.</p>';
     }
 
     content.innerHTML = html;
@@ -427,6 +437,11 @@
     if(expiresAt){
       expiryEl.textContent = 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
     }
+
+    var addcontact = document.getElementById('addcontact');
+    if(addcontact) addcontact.addEventListener('click', function(){
+      saveContact(who, vcard, photo, addcontact);
+    });
 
     var viewcard = document.getElementById('viewcard');
     if(viewcard) viewcard.addEventListener('click', function(){
@@ -827,9 +842,10 @@
     if(lastTrigger) lastTrigger.focus();
   }
 
-  function openContactCard(p, trigger){
-    lastTrigger = trigger;
-    var c = parseVCard(p.vcard);
+  // Phone, email, links and address from the vCard, as tappable rows. Used
+  // in the contact card sheet, and inline on a card-only page.
+  function contactRows(vcard){
+    var c = parseVCard(vcard);
     var rows = '';
     c.tels.forEach(function(t){ rows += row('phone', 'Phone', prettyPhone(t), 'tel:' + t.replace(/[^\d+]/g, ''), false); });
     c.emails.forEach(function(e){ rows += row('mail', 'Email', e, 'mailto:' + e, false); });
@@ -838,6 +854,12 @@
       if(href) rows += row('link', 'Link', u.replace(/^https?:\/\//i, '').replace(/\/$/, ''), href, true);
     });
     if(c.adr) rows += row('pin', 'Address', c.adr, 'https://maps.apple.com/?q=' + encodeURIComponent(c.adr), true);
+    return rows;
+  }
+
+  function openContactCard(p, trigger){
+    lastTrigger = trigger;
+    var rows = contactRows(p.vcard);
 
     if(!sheetEl){
       sheetEl = document.createElement('div');
