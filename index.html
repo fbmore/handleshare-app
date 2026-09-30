@@ -3,14 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Handleshare — Your business card, reimagined</title>
-<meta name="description" content="One QR code for everything: your contact card, links, files, even your Wi-Fi. Handleshare is a digital business card for iPhone — no account, no tracking, and nothing to install on the other end.">
+<title>Handleshare: Digital Business Card for iPhone, No Account</title>
+<meta name="description" content="Share your contact with a QR code or a link. No account, and your cards stay in your own iCloud. Free, or Pro for $19.99 a year or $49 once.">
+<link rel="canonical" href="https://handleshare.com/">
+<meta name="apple-itunes-app" content="app-id=581295018">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta property="og:title" content="Handleshare — Your business card, reimagined">
-<meta property="og:description" content="One QR code for everything: your contact card, links, files, even your Wi-Fi.">
-<meta property="og:image" content="logo.png">
+<meta property="og:site_name" content="Handleshare">
+<meta property="og:title" content="Handleshare, the digital business card for iPhone">
+<meta property="og:description" content="Share your contact with a QR code or a link. No account, and your cards stay in your own iCloud. Free, or Pro for $19.99 a year or $49 once.">
+<meta property="og:url" content="https://handleshare.com/">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://handleshare.com/media/og-1200x630.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Handleshare. Your card stays yours. Shared only when you choose.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Handleshare, the digital business card for iPhone">
+<meta name="twitter:description" content="Share your contact with a QR code or a link. No account, and your cards stay in your own iCloud. Free, or Pro for $19.99 a year or $49 once.">
+<meta name="twitter:image" content="https://handleshare.com/media/og-1200x630.jpg">
+<script type="application/ld+json">
+[
+ {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Handleshare",
+  "operatingSystem": "iOS 18.6 or later",
+  "applicationCategory": "BusinessApplication",
+  "description": "Share your contact with a QR code or a link. No account, and your cards stay in your own iCloud. Free, or Pro for $19.99 a year or $49 once.",
+  "url": "https://handleshare.com/",
+  "downloadUrl": "https://apps.apple.com/app/id581295018",
+  "image": "https://handleshare.com/media/og-1200x630.jpg",
+  "publisher": {
+   "@id": "https://handleshare.com/#org"
+  },
+  "offers": [
+   {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+   },
+   {
+    "@type": "Offer",
+    "name": "Pro monthly",
+    "price": "2.99",
+    "priceCurrency": "USD"
+   },
+   {
+    "@type": "Offer",
+    "name": "Pro yearly",
+    "price": "19.99",
+    "priceCurrency": "USD"
+   },
+   {
+    "@type": "Offer",
+    "name": "Pro lifetime",
+    "price": "49.00",
+    "priceCurrency": "USD"
+   }
+  ]
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://handleshare.com/#org",
+  "name": "FRANCESCO BERTOCCI, LLC",
+  "url": "https://handleshare.com/",
+  "logo": "https://handleshare.com/logo.png",
+  "email": "support@handleshare.com"
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "Handleshare tour",
+  "description": "A silent 70-second tour: switching between cards, choosing which details and files to share, sending a résumé and portfolio reel as one card link, the page the recipient sees, and the scanner.",
+  "thumbnailUrl": "https://handleshare.com/media/pitch-16x9-poster.jpg",
+  "uploadDate": "2026-09-30",
+  "duration": "PT1M10S",
+  "contentUrl": "https://handleshare.com/media/handleshare-pitch.mp4"
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "Handleshare on iPhone",
+  "description": "A silent 26-second loop: swiping between cards, the profile switcher, choosing what to share, and the scanner.",
+  "thumbnailUrl": "https://handleshare.com/media/pitch-poster.jpg",
+  "uploadDate": "2026-09-30",
+  "duration": "PT26S",
+  "contentUrl": "https://handleshare.com/media/pitch-hero.mp4"
+ }
+]
+</script>
 <style>
   :root{
     --ink:#ffffff;
@@ -59,6 +142,7 @@
   .logo{width:124px;height:124px;margin:0 auto 24px;animation:floaty 5.5s ease-in-out infinite}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
   h1{font-size:clamp(40px,7.4vw,66px);font-weight:300;letter-spacing:-.025em;margin:0 0 14px;text-wrap:balance}
+  .h1cat{display:block;margin-top:8px;font-size:clamp(18px,2.6vw,24px);font-weight:500;letter-spacing:-.005em;color:var(--ink)}
   .tag{font-size:clamp(16px,2.3vw,20px);color:var(--muted2);font-weight:300;
     max-width:530px;margin:0 auto 32px;text-wrap:pretty}
 
@@ -108,6 +192,7 @@
   .tourvid{display:block;width:100%;aspect-ratio:16/9;border-radius:20px;background:#12002b;
     outline:1px solid var(--outline);outline-offset:-1px;
     box-shadow:0 24px 60px -22px rgba(0,0,0,.8),0 0 80px -28px rgba(157,71,213,.42)}
+  .tourband .vidnote{font-size:15px;color:var(--muted);margin:22px auto 0;max-width:64ch}
 
   /* ---------- phone mock ---------- */
   .phoneWrap{display:flex;justify-content:center}
@@ -292,7 +377,7 @@
   <div class="logo" id="logoAnim" role="img" aria-label="Handleshare">
     <noscript><img src="logo.png" width="124" height="124" alt="Handleshare"></noscript>
   </div>
-  <h1>Handleshare</h1>
+  <h1>Handleshare<span class="h1cat">The digital business card for iPhone</span></h1>
   <p class="tag">One QR code for everything you'd put on a business card — and a few things you couldn't.</p>
 
   <div class="heroStage" id="heroStage">
@@ -352,13 +437,14 @@
 <section class="tourband">
   <div class="wrap">
     <p class="kicker">The tour</p>
-    <h2>Sixty-four seconds, no narration</h2>
+    <h2>Seventy seconds, no narration</h2>
     <p>Everything below, recorded from real cards — swiping between them, choosing what each person gets, sending files as a card link, and the codes that carry it.</p>
     <video class="tourvid" controls playsinline preload="none"
            poster="media/pitch-16x9-poster.jpg"
-           aria-label="A silent 64-second tour of Handleshare: switching between cards, the profile switcher, choosing which details and files to share, sending a résumé and portfolio reel as a card link and the page the recipient sees, a QR code for every link, and the scanner in QR and text modes.">
+           aria-label="A silent 70-second tour of Handleshare: switching between cards, the profile switcher, choosing which details and files to share, sending a résumé and portfolio reel as a card link and the page the recipient sees, a QR code for every link, and the scanner in QR and text modes.">
       <source src="media/handleshare-pitch.mp4" type="video/mp4">
     </video>
+    <p class="vidnote">In the video: swipe between cards and pick one from the switcher. Switch your phone number and email on and off before you share. Add a résumé and a portfolio reel, send them as one card link, and see the page the other person opens in any browser. Every link gets its own QR code, and one scanner reads QR codes, business cards and text.</p>
   </div>
 </section>
 
@@ -367,12 +453,13 @@
   <div class="wrap">
     <div class="copy">
       <p class="kicker">Share</p>
-      <h2>One code. Everything about you.</h2>
+      <h2>One QR code for your whole contact card</h2>
       <p>Build your card once — name, title, company, links, photo, bio — then hand it over with a QR code anyone can scan with their camera. Your details land straight in their contacts.</p>
       <ul class="bul">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>Nothing to install on their end</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-link"/></svg>Website, socials, booking and payment links</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>Every link gets its own code too — swipe to the one you need</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-qr"/></svg>Wi-Fi QR codes: guests join your network with one scan</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Or send it by AirDrop, Messages, or email</li>
       </ul>
     </div>
@@ -409,7 +496,7 @@
   <div class="wrap">
     <div class="copy">
       <p class="kicker">Scan</p>
-      <h2>Paper cards, digitised on the spot</h2>
+      <h2>Scan paper business cards on the spot</h2>
       <p>Handed a paper business card? Point the camera at it and Handleshare reads the details and offers to save them to Contacts. Your scan history keeps everything you've collected in one place.</p>
       <ul class="bul">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-scan"/></svg>Reads names, numbers, emails and addresses</li>
@@ -448,7 +535,7 @@
   <div class="wrap">
     <div class="copy">
       <p class="kicker">Files</p>
-      <h2>Send the portfolio with the card</h2>
+      <h2>Send your résumé and portfolio with your contact</h2>
       <p>Attach a rate card, menu, resume or lookbook and it travels with your card. Pick which files go out with each share. Send them as they are, or as one card link that arrives anywhere, whatever the size.</p>
       <ul class="bul">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-file"/></svg>PDFs, images and documents from Files or camera</li>
@@ -490,7 +577,7 @@
         </ul>
       </div>
     </div>
-    <p class="pricenote">Yearly saves 44% against monthly. Lifetime is a one-time purchase, not a subscription. Downloaded HandleShare before version 3.0? Pro is yours free — nothing to claim.</p>
+    <p class="pricenote">Yearly saves 44% against monthly. Lifetime is a one-time purchase, not a subscription. Downloaded Handleshare before version 3.0? Pro is yours free — nothing to claim.</p>
   </div>
 </section>
 
@@ -503,7 +590,7 @@
       <div class="tile">
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>
         <h3>Private by design</h3>
-        <p>No sign-up, no analytics, no ads. Sharing happens phone-to-phone, or through a card link you create, and only when you choose.</p>
+        <p>No sign-up, no ads, no third-party tracking. Sharing happens phone-to-phone, or through a card link you create, and only when you choose.</p>
       </div>
       <div class="tile">
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cloud"/></svg>
@@ -528,7 +615,7 @@
       <a href="terms.html">Terms</a>
       <a href="mailto:support@handleshare.com">Contact</a>
     </div>
-    <p class="fnote">Handleshare · Made in Brooklyn</p>
+    <p class="fnote">Handleshare · Made in Brooklyn · © 2026 FRANCESCO BERTOCCI, LLC</p>
   </div>
 </footer>
 

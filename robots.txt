@@ -1,0 +1,6 @@
+# Card links (/v/… and view.html) are not blocked here on purpose: they carry
+# "noindex, follow", and crawlers only see that tag if they may fetch the page.
+User-agent: *
+Allow: /
+
+Sitemap: https://handleshare.com/sitemap.xml

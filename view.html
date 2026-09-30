@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>A card shared with you — Handleshare</title>
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, follow">
+<meta name="apple-itunes-app" content="app-id=581295018">
 <!-- Static fallback for link previews. Per-link og tags (name, photo) come
      from the /v/<id> worker route; this covers direct view.html links, whose
      #hash never reaches a server. -->
@@ -243,7 +244,7 @@
     <span id="expiry"></span>
     <span class="spacer"></span>
     <a href="mailto:support@handleshare.com?subject=Report%20a%20shared%20Handleshare%20card">Report this card</a>
-    <a href="https://handleshare.com/">Get Handleshare</a>
+    <a href="https://handleshare.com/?utm_source=cardlink&amp;utm_medium=footer">Made with Handleshare. Make your own card, free.</a>
   </footer>
 </div>
 
@@ -341,9 +342,15 @@
     fetch(WORKER + '/card/' + encodeURIComponent(recordName), { cache: 'no-store' })
       .then(function(r){
         if(r.status === 404) return null;
+        if(r.status === 410) return r.json().then(function(j){ return { expired: true, firstName: j && j.firstName }; });
         if(!r.ok) throw new Error('card ' + r.status);
         return r.json();
       }).then(function(rec){
+      if(rec && rec.expired){
+        var ask = rec.firstName ? 'Ask ' + esc(clean(rec.firstName, 40)) + ' for a fresh one.' : 'Ask the person who sent it for a fresh one.';
+        state('<strong>This card has expired.</strong>' + ask);
+        return;
+      }
       if(!rec || !rec.fields){
         if(attempt < 15){
           state('<strong>Getting the card ready…</strong>It was just shared and is still uploading.');
