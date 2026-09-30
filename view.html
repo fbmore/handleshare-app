@@ -187,6 +187,12 @@
   .ln-txt{min-width:0;display:flex;flex-direction:column}
   .ln-txt span{font-size:16px;line-height:1.35;overflow-wrap:anywhere;text-wrap:pretty}
   .ln-txt small{font-size:13px;color:var(--muted);line-height:1.3;overflow-wrap:anywhere}
+  /* Platform icons (Venmo, LinkedIn…): the app's template icons, tinted like
+     the page's own line icons. */
+  .pf{display:block;width:20px;height:20px;background:currentColor;
+    -webkit-mask:var(--pf) center/contain no-repeat;mask:var(--pf) center/contain no-repeat}
+  .cc-ic{overflow:hidden}
+  .cc-ic img{width:100%;height:100%;object-fit:cover;display:block}
   .creds{margin:6px 0 0;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;text-wrap:pretty}
   .cc-add{width:100%;justify-content:center;margin-top:12px;min-height:50px;border-radius:16px}
 
@@ -404,6 +410,7 @@
     applyTheme(f.themePrimary && f.themePrimary.value, f.themeSecondary && f.themeSecondary.value);
     var creds = ((f.credentials && f.credentials.value) || []).map(function(c){ return clean(c, 80); }).filter(Boolean).slice(0, 12);
     var links = namedLinks(f, vcard);
+    links.forEach(function(l){ if(l.image) linkImages[l.href] = l.image; });
 
     var files = items.map(function(it, i){
       var name = clean(names[i]) || ('file-' + (i + 1));
@@ -865,6 +872,47 @@
     return out;
   }
 
+  // Kept in step with SocialIconManager.platforms in the app. Matched on the
+  // host (or a subdomain), so "t.co" never claims reddit.com.
+  var PLATFORMS = [
+    ['facebook', ['facebook.com','fb.com','fb.me']], ['instagram', ['instagram.com','instagr.am']],
+    ['twitter-x', ['twitter.com','x.com','t.co']], ['tiktok', ['tiktok.com']],
+    ['linkedin', ['linkedin.com','lnkd.in']], ['pinterest', ['pinterest.com','pin.it']],
+    ['reddit', ['reddit.com','redd.it']], ['github', ['github.com','github.io']],
+    ['dribbble', ['dribbble.com']], ['behance', ['behance.net']], ['deviantart', ['deviantart.com']],
+    ['figma', ['figma.com']], ['venmo', ['venmo.com']], ['paypal', ['paypal.com','paypal.me']],
+    ['cash-app', ['cash.app']], ['calendly', ['calendly.com']], ['linktree', ['linktr.ee','linktree.com']],
+    ['onlyfans', ['onlyfans.com']], ['patreon', ['patreon.com']], ['youtube', ['youtube.com','youtu.be']],
+    ['spotify', ['spotify.com']], ['soundcloud', ['soundcloud.com']], ['twitch', ['twitch.tv']],
+    ['medium', ['medium.com']], ['substack', ['substack.com']], ['etsy', ['etsy.com']],
+    ['shopify', ['myshopify.com']], ['discord', ['discord.gg','discord.com']],
+    ['steam', ['steamcommunity.com','store.steampowered.com']], ['slack', ['slack.com']],
+    ['notion', ['notion.so','notion.site']], ['google-scholar', ['scholar.google.com']],
+    ['researchgate', ['researchgate.net']], ['tinder', ['tinder.com']], ['strava', ['strava.com']],
+    ['goodreads', ['goodreads.com']], ['clubhouse', ['clubhouse.com','joinclubhouse.com']]
+  ];
+  function platformOf(href){
+    var host = domainOf(href).toLowerCase();
+    if(!host) return '';
+    for(var i = 0; i < PLATFORMS.length; i++){
+      var pats = PLATFORMS[i][1];
+      for(var j = 0; j < pats.length; j++){
+        if(host === pats[j] || host.slice(-(pats[j].length + 1)) === '.' + pats[j]) return PLATFORMS[i][0];
+      }
+    }
+    return '';
+  }
+  // A link's picture: the image the sender chose (or the page's), else the
+  // platform's icon, else the generic link icon.
+  function linkIcon(href, image){
+    if(image) return '<img src="' + esc(image) + '" alt="" loading="lazy">';
+    var pf = platformOf(href);
+    return pf ? '<span class="pf" style="--pf:url(/icons/' + pf + '.png)"></span>' : icon('link');
+  }
+  // Images by link address, filled when the card renders, for the contact
+  // card sheet's rows.
+  var linkImages = {};
+
   function domainOf(href){
     try { return new URL(href).hostname.replace(/^www\./, ''); } catch(err){ return ''; }
   }
@@ -898,7 +946,7 @@
   }
 
   function linkRow(l){
-    var thumb = l.image ? '<img src="' + esc(l.image) + '" alt="" loading="lazy">' : icon('link');
+    var thumb = linkIcon(l.href, l.image);
     var sub = l.domain && l.domain !== l.name ? '<small>' + esc(l.domain) + '</small>' : '';
     return '<li><a class="cc-row" href="' + esc(l.href) + '" target="_blank" rel="noopener noreferrer">' +
       '<span class="ln-thumb" aria-hidden="true">' + thumb + '</span>' +
@@ -920,9 +968,9 @@
     } catch(err){ return null; }
   }
 
-  function row(kind, label, value, href, external){
+  function row(kind, label, value, href, external, iconHTML){
     return '<li><a class="cc-row" href="' + esc(href) + '"' + (external ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' +
-      '<span class="cc-ic">' + icon(kind) + '</span>' +
+      '<span class="cc-ic">' + (iconHTML || icon(kind)) + '</span>' +
       '<span class="cc-txt"><small>' + esc(label) + '</small><span>' + esc(value) + '</span></span></a></li>';
   }
 
@@ -947,7 +995,8 @@
     c.emails.forEach(function(e){ rows += row('mail', 'Email', e, 'mailto:' + e, false); });
     if(withLinks !== false) c.urls.forEach(function(u){
       var href = safeURL(u.url);
-      if(href) rows += row('link', u.label || 'Link', u.url.replace(/^https?:\/\//i, '').replace(/\/$/, ''), href, true);
+      if(href) rows += row('link', u.label || 'Link', u.url.replace(/^https?:\/\//i, '').replace(/\/$/, ''), href, true,
+                           linkIcon(href, linkImages[href]));
     });
     if(c.adr) rows += row('pin', 'Address', c.adr, 'https://maps.apple.com/?q=' + encodeURIComponent(c.adr), true);
     return rows;
