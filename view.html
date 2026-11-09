@@ -361,10 +361,14 @@
     fetch(WORKER + '/card/' + encodeURIComponent(recordName), { cache: 'no-store' })
       .then(function(r){
         if(r.status === 404) return null;
-        if(r.status === 410) return r.json().then(function(j){ return { expired: true, firstName: j && j.firstName }; });
+        if(r.status === 410) return r.json().then(function(j){ return j && j.error === 'removed' ? { removed: true } : { expired: true, firstName: j && j.firstName }; });
         if(!r.ok) throw new Error('card ' + r.status);
         return r.json();
       }).then(function(rec){
+      if(rec && rec.removed){
+        state('<strong>This card was removed.</strong>It is no longer available.');
+        return;
+      }
       if(rec && rec.expired){
         var ask = rec.firstName ? 'Ask ' + esc(clean(rec.firstName, 40)) + ' for a fresh one.' : 'Ask the person who sent it for a fresh one.';
         state('<strong>This card has expired.</strong>' + ask);
