@@ -10,16 +10,17 @@
      from the /v/<id> worker route; this covers direct view.html links, whose
      #hash never reaches a server. -->
 <meta property="og:title" content="A card shared with you">
-<meta property="og:description" content="A Handleshare card with files you can download — the link expires on its own.">
+<meta property="og:description" content="A card shared privately with Handleshare.">
 <meta property="og:image" content="https://handleshare.com/logo.png">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   :root{
+    --g1:#B44DFF;--g2:#E05BEF;--g3:#F3C6FF;
     --ink:#ffffff;
     --muted:rgba(255,255,255,.52);
     --muted2:rgba(255,255,255,.74);
-    --canvas:#0d0020;
+    --canvas:#15011F;
     --violet:#7100BA;
     --magenta:#C21FD4;
     --glow:#9D47D5;
@@ -49,14 +50,45 @@
     font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
     line-height:1.55;
   }
-  /* The app's AnimatedBackgroundView, held still: the primary color top-left,
-     the secondary bottom-right, a half-strength primary on the right, all
-     soft-edged over the dark canvas. Fixed, so it stays put as files scroll. */
-  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
-    radial-gradient(75vmax 75vmax at 0% 0%,rgba(var(--p-rgb),.8),transparent 65%),
-    radial-gradient(85vmax 85vmax at 100% 100%,rgba(var(--s-rgb),.7),transparent 65%),
-    radial-gradient(60vmax 60vmax at 100% 25%,rgba(var(--p-rgb),.35),transparent 65%),
-    var(--canvas)}
+  /* The app's AnimatedBackgroundView: three soft circles of the theme's
+     colors drifting slowly over its background (#15011F unless the theme
+     sets one). Only transform animates; the gradients are soft already, so
+     no blur filter. Fixed, so it stays put as files scroll. Still under
+     Reduce Motion. */
+  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--canvas)}
+  .bg i{position:absolute;border-radius:50%;will-change:transform;
+    animation:var(--drift) var(--dur) cubic-bezier(.45,0,.55,1) infinite alternate}
+  .bg i:nth-child(1){width:120vmax;height:120vmax;left:-60vmax;top:-60vmax;--drift:drift-a;--dur:19s;
+    background:radial-gradient(closest-side,rgba(var(--p-rgb),.7),rgba(var(--p-rgb),0))}
+  .bg i:nth-child(2){width:140vmax;height:140vmax;right:-70vmax;bottom:-70vmax;--drift:drift-b;--dur:23s;
+    background:radial-gradient(closest-side,rgba(var(--s-rgb),.6),rgba(var(--s-rgb),0))}
+  .bg i:nth-child(3){width:90vmax;height:90vmax;right:-45vmax;top:-15vmax;--drift:drift-c;--dur:29s;
+    background:radial-gradient(closest-side,rgba(var(--p-rgb),.32),rgba(var(--p-rgb),0))}
+  @keyframes drift-a{from{transform:translate(0,0) scale(1)}to{transform:translate(10vmax,8vmax) scale(1.18)}}
+  @keyframes drift-b{from{transform:translate(0,0) scale(1.1)}to{transform:translate(-12vmax,-6vmax) scale(.95)}}
+  @keyframes drift-c{from{transform:translate(0,0) scale(.9)}to{transform:translate(-8vmax,14vmax) scale(1.12)}}
+
+  /* Rise-in, once, when the card arrives: semantic chunks 90 ms apart
+     (DailyDo's page motion). */
+  .rise{animation:rise-in 620ms var(--ease) both;animation-delay:calc(var(--i,0) * 90ms)}
+  @keyframes rise-in{from{opacity:0;translate:0 12px;filter:blur(4px)}to{opacity:1;translate:0 0;filter:blur(0)}}
+
+  /* The app's ThemeGlow: a conic ring of the card's colors around its edge,
+     a blurred halo under a crisp rim, turning once as the card arrives and
+     fading away. Under Reduce Motion it only fades. */
+  @property --spin{syntax:'<angle>';inherits:true;initial-value:0deg}
+  .glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;--spin:-90deg}
+  .glow .rim,.glow .halo{position:absolute;inset:0;border-radius:inherit}
+  .glow .halo{filter:blur(10px);opacity:.7}
+  .glow .rim::before,.glow .halo::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;
+    background:conic-gradient(from var(--spin),var(--g1),var(--g2) 25%,#fff8 50%,var(--g3) 75%,var(--g1));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude}
+  .glow .halo::before{padding:7px;inset:-3px}
+  .glow.flash{animation:glow-fade 2.2s var(--ease) .25s both,glow-spin 2.2s linear .25s both}
+  @keyframes glow-fade{0%{opacity:0}20%{opacity:1}65%{opacity:1}100%{opacity:0}}
+  @keyframes glow-spin{from{--spin:-90deg}to{--spin:150deg}}
+
   img{max-width:100%}
   :focus-visible{outline:2px solid var(--glow);outline-offset:3px;border-radius:8px}
   .wrap{max-width:880px;margin:0 auto;padding:28px 20px 96px}
@@ -87,7 +119,8 @@
   .role{color:rgba(255,255,255,.8);font-size:17px;margin:4px 0 0;white-space:pre-line;text-wrap:balance}
   .note{margin:14px 0 0;color:var(--muted2);font-size:15px;white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
   /* The QR code's place. Outer 16 = rows 12 + 4 padding. */
-  .info{margin:22px 0 0;padding:4px;border-radius:16px;background:rgba(var(--shade),.32);text-align:left}
+  .reach{margin-top:22px}
+  .info{margin:0;padding:4px;border-radius:16px;background:rgba(var(--shade),.32);text-align:left}
   .info .cc-row{border-radius:12px}
   .card .add{width:100%;justify-content:center;margin-top:14px;min-height:50px;border-radius:16px}
   .caption{margin:18px 0 0;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;
@@ -256,11 +289,14 @@
   @media (prefers-reduced-motion:reduce){
     *{transition-duration:0ms !important}
     .btn:active{scale:1}
+    .bg i{animation:none}
+    .rise{animation:none}
+    .glow.flash{animation:glow-fade 2.2s ease-out .25s both}
   }
 </style>
 </head>
 <body>
-<div class="bg" aria-hidden="true"></div>
+<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="wrap">
   <nav>
     <a href="https://handleshare.com/"><span class="logo-lottie" aria-hidden="true"><img src="logo.png" alt=""></span>Handleshare</a>
@@ -319,32 +355,54 @@
   function esc(s){
     return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   }
-  // The sender's card theme, as two "#RRGGBB" strings from the app. Anything
-  // else (older links, junk) keeps the default purple. Same rules as the app's
-  // AppTheme: text on the gradient is black or white by its worse end, and the
-  // accent is lightened until it holds 4.5:1 on the dark canvas.
-  function applyTheme(p, s){
+  // The sender's card theme. `themePrimary` carries the page style:
+  // "#PRIMARY #SECONDARY #ACCENT #BACKGROUND [keep]" (background "-" = the
+  // app's default); older links stored a single hex there, and that still
+  // works. `themeSecondary` is the secondary as one hex. The page uses the
+  // same background as the app (#15011F unless the theme sets its own), so
+  // it reads like the card did on the sender's phone.
+  // Returns { keep } — true when the link lasts while the sender is subscribed.
+  var DEFAULT_CANVAS = [21, 1, 31];
+  function applyTheme(style, secondary){
     var HEX = /^#[0-9a-f]{6}$/i;
-    if(!HEX.test(p || '') || !HEX.test(s || '')) return;
+    var tokens = String(style || '').trim().split(/\s+/);
+    var keep = tokens.indexOf('keep') >= 0;
+    var p = tokens[0], s = HEX.test(tokens[1] || '') ? tokens[1] : secondary;
+    var a = HEX.test(tokens[2] || '') ? tokens[2] : null;
+    var bg = HEX.test(tokens[3] || '') ? tokens[3] : null;
+    if(!HEX.test(p || '') || !HEX.test(s || '')) return { keep: keep };
     function rgb(h){ return [1,3,5].map(function(i){ return parseInt(h.substr(i, 2), 16); }); }
     function lum(c){
       var l = c.map(function(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
       return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2];
     }
-    function contrast(a, b){ return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); }
+    function contrast(x, y){ return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
     function mix(c, d, t){ return c.map(function(v, i){ return Math.round(v + (d[i] - v) * t); }); }
     function css(c){ return 'rgb(' + c.join(',') + ')'; }
+    // The app's ThemeGlow lift: dark theme colors glow instead of vanishing.
+    function glowing(c){
+      var r = c[0] / 255, g = c[1] / 255, b = c[2] / 255;
+      var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      var h = 0;
+      if(d){ h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if(h < 0) h += 360; }
+      var sat = max ? d / max : 0;
+      sat = sat < 0.08 ? sat : Math.max(sat, 0.55);
+      var v = Math.max(max, 0.85), C = v * sat, X = C * (1 - Math.abs((h / 60) % 2 - 1)), m = v - C;
+      var k = h < 60 ? [C, X, 0] : h < 120 ? [X, C, 0] : h < 180 ? [0, C, X] : h < 240 ? [0, X, C] : h < 300 ? [X, 0, C] : [C, 0, X];
+      return k.map(function(x){ return Math.round((x + m) * 255); });
+    }
 
-    var P = rgb(p), S = rgb(s);
+    var P = rgb(p), S = rgb(s), A = a ? rgb(a) : (lum(P) >= lum(S) ? P : S);
+    var canvas = bg ? rgb(bg) : DEFAULT_CANVAS;
+    // White text has to stay readable: a light background color is deepened.
+    for(var i = 0; i < 20 && contrast(1, lum(canvas)) < 7; i++) canvas = mix(canvas, [0, 0, 0], 0.15);
     var ends = [lum(P), lum(S)];
-    // Tint the page from the brighter color: a theme that starts near black
-    // would otherwise give a plain black page with none of its color.
-    var B = ends[0] >= ends[1] ? P : S;
-    var canvas = mix(B, [8, 8, 12], 0.9);
     var onWhite = Math.min(contrast(1, ends[0]), contrast(1, ends[1]));
     var onBlack = Math.min(contrast(0, ends[0]), contrast(0, ends[1]));
-    var glow = B, t = 0;
-    while(t < 1 && contrast(lum(glow), lum(canvas)) < 4.5){ t += 0.05; glow = mix(B, [255, 255, 255], t); }
+    // The accent, lightened until it holds 4.5:1 on the background (the
+    // app's legibleAccent).
+    var glow = A, t = 0;
+    while(t < 1 && contrast(lum(glow), lum(canvas)) < 4.5){ t += 0.05; glow = mix(A, [255, 255, 255], t); }
 
     var root = document.documentElement.style;
     root.setProperty('--violet', css(P));
@@ -354,7 +412,11 @@
     root.setProperty('--canvas', css(canvas));
     root.setProperty('--p-rgb', P.join(','));
     root.setProperty('--s-rgb', S.join(','));
-    root.setProperty('--shade', mix(B, [0, 0, 0], 0.93).join(','));
+    root.setProperty('--shade', mix(canvas, [0, 0, 0], 0.55).join(','));
+    root.setProperty('--g1', css(glowing(P)));
+    root.setProperty('--g2', css(glowing(S)));
+    root.setProperty('--g3', css(glowing(A)));
+    return { keep: keep };
   }
 
   function clean(v, max){
@@ -452,7 +514,7 @@
     var items = (f.items && f.items.value) || [];
     var names = (f.itemNames && f.itemNames.value) || [];
     var types = (f.itemTypes && f.itemTypes.value) || [];
-    applyTheme(f.themePrimary && f.themePrimary.value, f.themeSecondary && f.themeSecondary.value);
+    var look = applyTheme(f.themePrimary && f.themePrimary.value, f.themeSecondary && f.themeSecondary.value);
     var creds = ((f.credentials && f.credentials.value) || []).map(function(c){ return clean(c, 80); }).filter(Boolean).slice(0, 12);
     var links = namedLinks(f, vcard);
 
@@ -477,31 +539,39 @@
     // page shows what the QR code would have given: phone, email, address,
     // and a button to save them. The expiry is the caption under it.
     var rows = vcard ? contactRows(vcard) : '';
-    var expiry = expiresAt
-      ? 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+    // A link that lasts while the sender is subscribed shows no end date.
+    var expiry = expiresAt && !look.keep
+      ? 'Available until ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
       : '';
+    // Semantic chunks rise in 90 ms apart: photo, who, what they said, how to
+    // reach them, then the links and files under the card.
+    var n = 0;
+    function rise(){ return ' rise" style="--i:' + (n++); }
     var html = '<div class="column">' + (isPreview
-      ? '<p class="preview">Preview — this is what people see. Your visit isn’t counted as a view.</p>'
+      ? '<p class="preview' + rise() + '">Preview — this is what people see. Your visit isn’t counted as a view.</p>'
       : '') + '<section class="card">' +
-      '<span class="avatar" aria-hidden="true">' + (photo ? '<img src="' + esc(photo) + '" alt="">' : esc(initials)) + '</span>' +
-      '<h1>' + esc(who || 'A card shared with you') + '</h1>' +
+      '<span class="glow" aria-hidden="true"><span class="halo"></span><span class="rim"></span></span>' +
+      '<span class="avatar' + rise() + '" aria-hidden="true">' + (photo ? '<img src="' + esc(photo) + '" alt="">' : esc(initials)) + '</span>' +
+      '<div class="who' + rise() + '"><h1>' + esc(who || 'A card shared with you') + '</h1>' +
       (role ? '<p class="role">' + esc(role) + '</p>' : '') +
-      (creds.length ? '<p class="creds">' + creds.map(esc).join(' · ') + '</p>' : '') +
-      (note ? '<p class="note">' + esc(note) + '</p>' : '') +
-      (rows ? '<ul class="cc-rows info" aria-label="Contact details">' + rows + '</ul>' : '') +
-      (vcard ? '<button class="btn primary add" id="addcontact" type="button">Add to contacts</button>' : '') +
-      (expiry ? '<p class="caption">' + esc(expiry) + '</p>' : '') +
+      (creds.length ? '<p class="creds">' + creds.map(esc).join(' · ') + '</p>' : '') + '</div>' +
+      (note ? '<p class="note' + rise() + '">' + esc(note) + '</p>' : '') +
+      (rows || vcard ? '<div class="reach' + rise() + '">' +
+        (rows ? '<ul class="cc-rows info" aria-label="Contact details">' + rows + '</ul>' : '') +
+        (vcard ? '<button class="btn primary add" id="addcontact" type="button">Save contact</button>' : '') +
+      '</div>' : '') +
+      (expiry ? '<p class="caption' + rise() + '">' + esc(expiry) + '</p>' : '') +
       '</section>';
 
     if(links.length){
-      html += '<ul class="cc-rows inline links" aria-label="Links">' + links.map(linkRow).join('') + '</ul>';
+      html += '<ul class="cc-rows inline links' + rise() + '" aria-label="Links">' + links.map(linkRow).join('') + '</ul>';
     }
     html += '</div>';
 
     if(files.length){
-      html += '<div class="files-head"><p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p>' +
+      html += '<div class="files-head' + rise() + '"><p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p>' +
         (files.length > 1 ? '<button class="btn" id="all" type="button">Download all (' + files.length + ')</button>' : '') +
-        '</div><div class="grid' + (files.length === 1 ? ' one' : '') + '">';
+        '</div><div class="grid' + (files.length === 1 ? ' one' : '') + rise() + '">';
       files.forEach(function(file, i){
         var glyph = file.type === 'pdf' ? '📄' : file.type === 'image' ? '🖼️' : file.type === 'audio' ? '🎵' : '📎';
         var viewable = VIEWABLE.indexOf(file.type) >= 0;
@@ -530,6 +600,9 @@
     }
 
     content.innerHTML = html;
+    // One turn of the glow as the card lands, like the app's card on open.
+    var glow = content.querySelector('.glow');
+    if(glow) requestAnimationFrame(function(){ glow.classList.add('flash'); });
 
     previewPDFs(files);
 
