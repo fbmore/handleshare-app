@@ -26,13 +26,15 @@
     /* Theme-derived (defaults = the Handleshare purple). applyTheme() swaps
        all of these for the sender's card theme. */
     --on-accent:#ffffff;
-    --canvas-glow:rgba(113,0,186,.26);
-    --panel:#170830;
-    --head-a:rgba(113,0,186,.55);
-    --head-b:rgba(194,31,212,.35);
+    /* Theme colors as channels, for the backdrop's blobs. */
+    --p-rgb:113,0,186;
+    --s-rgb:194,31,212;
     --shade:6,0,16;
-    --surface:rgba(255,255,255,.055);
-    --surface2:rgba(255,255,255,.09);
+    /* The app's card glass: white 15% fill, white 25% edge. */
+    --glass:rgba(255,255,255,.12);
+    --glass-edge:inset 0 0 0 1px rgba(255,255,255,.22);
+    --surface:rgba(255,255,255,.08);
+    --surface2:rgba(255,255,255,.1);
     --line:rgba(255,255,255,.1);
     /* Pure white at 10%: a tinted outline picks up the canvas and reads as dirt. */
     --outline:oklch(1 0 0 / 0.1);
@@ -46,9 +48,15 @@
     margin:0;background:var(--canvas);color:var(--ink);
     font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
     line-height:1.55;
-    background-image:radial-gradient(58% 30% at 50% 0%,var(--canvas-glow),transparent 72%);
-    background-repeat:no-repeat;
   }
+  /* The app's AnimatedBackgroundView, held still: the primary color top-left,
+     the secondary bottom-right, a half-strength primary on the right, all
+     soft-edged over the dark canvas. Fixed, so it stays put as files scroll. */
+  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+    radial-gradient(75vmax 75vmax at 0% 0%,rgba(var(--p-rgb),.8),transparent 65%),
+    radial-gradient(85vmax 85vmax at 100% 100%,rgba(var(--s-rgb),.7),transparent 65%),
+    radial-gradient(60vmax 60vmax at 100% 25%,rgba(var(--p-rgb),.35),transparent 65%),
+    var(--canvas)}
   img{max-width:100%}
   :focus-visible{outline:2px solid var(--glow);outline-offset:3px;border-radius:8px}
   .wrap{max-width:880px;margin:0 auto;padding:28px 20px 96px}
@@ -63,22 +71,31 @@
   .logo-lottie img{position:absolute;inset:0}
   .logo-lottie svg{display:block}
 
-  /* who it's from */
-  .card{display:flex;gap:16px;align-items:flex-start;padding:20px;
-    /* Outer 20 = inner 12 + 8 padding, so the corners stay concentric. */
-    border-radius:20px;background:var(--surface);box-shadow:var(--lift);margin-bottom:28px}
-  .avatar{flex:none;width:64px;height:64px;border-radius:50%;overflow:hidden;
+  /* who it's from: the app's card, glass over the backdrop. Photo, name and
+     role centred; the contact details sit where the app shows its QR code,
+     and the expiry is the monospaced caption under it. */
+  .column{max-width:420px;margin:0 auto}
+  .card{position:relative;text-align:center;padding:40px 24px 26px;margin:0 auto 24px;
+    border-radius:28px;background:var(--glass);box-shadow:var(--glass-edge),var(--lift);
+    -webkit-backdrop-filter:blur(24px) saturate(140%);backdrop-filter:blur(24px) saturate(140%)}
+  .avatar{flex:none;width:112px;height:112px;margin:0 auto 18px;border-radius:50%;overflow:hidden;
     background:linear-gradient(150deg,var(--violet),var(--magenta));color:var(--on-accent);
-    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:600;
     outline:1px solid var(--outline);outline-offset:-1px}
   .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-  h1{font-size:25px;line-height:1.22;font-weight:600;margin:2px 0 2px;text-wrap:balance}
-  .role{color:var(--muted2);font-size:15px;margin:0;text-wrap:pretty}
-  .note{margin:10px 0 0;color:var(--muted2);font-size:15px;white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
+  h1{font-size:26px;line-height:1.22;font-weight:600;margin:0;text-wrap:balance}
+  .role{color:rgba(255,255,255,.8);font-size:17px;margin:4px 0 0;white-space:pre-line;text-wrap:balance}
+  .note{margin:14px 0 0;color:var(--muted2);font-size:15px;white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
+  /* The QR code's place. Outer 16 = rows 12 + 4 padding. */
+  .info{margin:22px 0 0;padding:4px;border-radius:16px;background:rgba(var(--shade),.32);text-align:left}
+  .info .cc-row{border-radius:12px}
+  .card .add{width:100%;justify-content:center;margin-top:14px;min-height:50px;border-radius:16px}
+  .caption{margin:18px 0 0;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;
+    color:rgba(255,255,255,.72);font-variant-numeric:tabular-nums;text-wrap:balance}
 
   .preview{margin:0 0 16px;padding:10px 14px;border-radius:12px;font-size:14px;color:var(--muted2);
     background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);text-wrap:pretty}
-  .actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 26px}
+  .files-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 14px}
   .btn{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:600;font-size:15px;
     min-height:44px;padding:0 20px;border-radius:14px;display:inline-flex;align-items:center;gap:9px;
     color:var(--ink);background:var(--surface2);text-decoration:none;
@@ -89,7 +106,7 @@
   .btn.primary:hover{filter:brightness(1.08)}
   .btn[disabled]{opacity:.55;cursor:default;scale:1}
 
-  .count{color:var(--muted);font-size:14px;margin:0 0 14px;font-variant-numeric:tabular-nums}
+  .count{color:var(--muted2);font-size:14px;margin:0;font-variant-numeric:tabular-nums}
 
   /* the files */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
@@ -101,7 +118,8 @@
     .grid.one .thumb{aspect-ratio:16/9}
   }
   .tile{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;
-    background:var(--surface);box-shadow:var(--lift)}
+    background:var(--glass);box-shadow:var(--glass-edge),var(--lift);
+    -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
   .thumb{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
     background:rgba(255,255,255,.04);position:relative}
   .thumb img{width:100%;height:100%;object-fit:cover;display:block;
@@ -126,45 +144,16 @@
   footer a{color:var(--muted2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center;
     transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
   footer a:hover{color:var(--ink)}
-  .spacer{flex:1}
   /* Phones: one item per line. Side by side, the two links wrap onto
      separate lines at unpredictable points anyway. */
   @media (max-width:599px){
     footer{flex-direction:column;align-items:flex-start;gap:0}
-    footer #expiry{margin-bottom:6px}
-    .spacer{display:none}
   }
 
-  /* contact card sheet */
-  .sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
-  .sheet[hidden]{display:none}
-  .scrim{position:absolute;inset:0;background:rgba(var(--shade),.62);opacity:0;
-    transition-property:opacity;transition-duration:200ms;transition-timing-function:ease-out}
-  .panel{position:relative;width:100%;max-width:440px;max-height:92vh;overflow:auto;
-    background:var(--panel);border-radius:28px 28px 0 0;box-shadow:var(--lift);
-    padding:12px 12px calc(16px + env(safe-area-inset-bottom));
-    opacity:0;transform:translateY(12px);
-    transition-property:opacity,transform;transition-duration:200ms,240ms;transition-timing-function:ease-out,var(--ease)}
-  .sheet.open .scrim{opacity:1}
-  .sheet.open .panel{opacity:1;transform:none}
-  @media (min-width:600px){
-    .sheet{align-items:center;padding:24px}
-    .panel{border-radius:28px;padding-bottom:16px}
-  }
-  /* Outer 28 = inner 16 + 12 padding. */
-  .cc-head{position:relative;border-radius:16px;padding:28px 20px 22px;text-align:center;
-    background:linear-gradient(150deg,var(--head-a),var(--head-b))}
-  .cc-head .avatar{width:96px;height:96px;margin:0 auto 14px;font-size:34px}
-  .cc-head h2{font-size:23px;line-height:1.22;font-weight:600;margin:0;text-wrap:balance}
-  .cc-head p{margin:4px 0 0;color:var(--muted2);font-size:15px;text-wrap:pretty}
-  .close{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;border-radius:22px;
-    background:transparent;color:var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:center;
-    transition-property:background-color,color;transition-duration:140ms;transition-timing-function:var(--ease)}
-  .close:hover{background:rgba(255,255,255,.1);color:var(--ink)}
-  .cc-rows{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:2px}
-  /* Card-only page: the rows sit on the page under the card, in a surface of
-     their own. Outer 20 = inner 16 + 4 padding. */
-  .cc-rows.inline{margin:-12px 0 24px;padding:4px;border-radius:20px;background:var(--surface);box-shadow:var(--lift)}
+  .cc-rows{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+  /* The links, under the card in the same glass. Outer 20 = inner 16 + 4 padding. */
+  .cc-rows.inline{margin:0 0 24px;padding:4px;border-radius:20px;background:var(--glass);
+    box-shadow:var(--glass-edge),var(--lift);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
   .cc-row{display:flex;align-items:center;gap:14px;min-height:60px;padding:8px 12px;border-radius:16px;
     color:var(--ink);text-decoration:none;
     transition-property:background-color;transition-duration:140ms;transition-timing-function:var(--ease)}
@@ -193,8 +182,7 @@
     -webkit-mask:var(--pf) center/contain no-repeat;mask:var(--pf) center/contain no-repeat}
   .cc-ic{overflow:hidden}
   .cc-ic img{width:100%;height:100%;object-fit:cover;display:block}
-  .creds{margin:6px 0 0;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;text-wrap:pretty}
-  .cc-add{width:100%;justify-content:center;margin-top:12px;min-height:50px;border-radius:16px}
+  .creds{margin:8px 0 0;color:var(--muted2);font-size:13px;font-variant-numeric:tabular-nums;text-wrap:balance}
 
   /* tiles that open the viewer */
   button.thumb{appearance:none;border:0;margin:0;padding:0;width:100%;font:inherit;color:inherit;cursor:zoom-in}
@@ -250,6 +238,7 @@
 </style>
 </head>
 <body>
+<div class="bg" aria-hidden="true"></div>
 <div class="wrap">
   <nav>
     <a href="https://handleshare.com/"><span class="logo-lottie" aria-hidden="true"><img src="logo.png" alt=""></span>Handleshare</a>
@@ -260,8 +249,6 @@
   </main>
 
   <footer>
-    <span id="expiry"></span>
-    <span class="spacer"></span>
     <a href="mailto:support@handleshare.com?subject=Report%20a%20shared%20Handleshare%20card">Report this card</a>
     <a href="https://handleshare.com/?utm_source=cardlink&amp;utm_medium=footer">Made with Handleshare. Make your own card, free.</a>
   </footer>
@@ -276,7 +263,6 @@
   var WORKER = 'https://handleshare-views.fbmore.workers.dev';
 
   var content = document.getElementById('content');
-  var expiryEl = document.getElementById('expiry');
   var recordName = (location.hash || '').replace(/^#/, '').split('/')[0];
   // "#<id>/preview" is the sender checking their own link from the app: same
   // page, marked as a preview, and not counted as a view.
@@ -303,7 +289,6 @@
     function contrast(a, b){ return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); }
     function mix(c, d, t){ return c.map(function(v, i){ return Math.round(v + (d[i] - v) * t); }); }
     function css(c){ return 'rgb(' + c.join(',') + ')'; }
-    function rgba(c, a){ return 'rgba(' + c.join(',') + ',' + a + ')'; }
 
     var P = rgb(p), S = rgb(s);
     var ends = [lum(P), lum(S)];
@@ -322,10 +307,8 @@
     root.setProperty('--glow', css(glow));
     root.setProperty('--on-accent', onBlack > onWhite ? '#000' : '#fff');
     root.setProperty('--canvas', css(canvas));
-    root.setProperty('--canvas-glow', rgba(B, .26));
-    root.setProperty('--panel', css(mix(B, [16, 16, 20], 0.84)));
-    root.setProperty('--head-a', rgba(P, .55));
-    root.setProperty('--head-b', rgba(S, .35));
+    root.setProperty('--p-rgb', P.join(','));
+    root.setProperty('--s-rgb', S.join(','));
     root.setProperty('--shade', mix(B, [0, 0, 0], 0.93).join(','));
   }
 
@@ -414,7 +397,6 @@
     applyTheme(f.themePrimary && f.themePrimary.value, f.themeSecondary && f.themeSecondary.value);
     var creds = ((f.credentials && f.credentials.value) || []).map(function(c){ return clean(c, 80); }).filter(Boolean).slice(0, 12);
     var links = namedLinks(f, vcard);
-    links.forEach(function(l){ if(l.image) linkImages[l.href] = l.image; });
 
     var files = items.map(function(it, i){
       var name = clean(names[i]) || ('file-' + (i + 1));
@@ -433,36 +415,35 @@
     document.title = (who ? who + '’s card' : 'A card shared with you') + ' — Handleshare';
 
     var initials = (who || '?').split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
-    var html = (isPreview
+    // The app's card: photo, name, role. Where the app shows its QR code, the
+    // page shows what the QR code would have given: phone, email, address,
+    // and a button to save them. The expiry is the caption under it.
+    var rows = vcard ? contactRows(vcard) : '';
+    var expiry = expiresAt
+      ? 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+      : '';
+    var html = '<div class="column">' + (isPreview
       ? '<p class="preview">Preview — this is what people see. Your visit isn’t counted as a view.</p>'
       : '') + '<section class="card">' +
       '<span class="avatar" aria-hidden="true">' + (photo ? '<img src="' + esc(photo) + '" alt="">' : esc(initials)) + '</span>' +
-      '<div>' +
-        '<h1>' + esc(who || 'A card shared with you') + '</h1>' +
-        (role ? '<p class="role">' + esc(role) + '</p>' : '') +
-        (creds.length ? '<p class="creds">' + creds.map(esc).join(' · ') + '</p>' : '') +
-        (note ? '<p class="note">' + esc(note) + '</p>' : '') +
-      '</div></section>';
+      '<h1>' + esc(who || 'A card shared with you') + '</h1>' +
+      (role ? '<p class="role">' + esc(role) + '</p>' : '') +
+      (creds.length ? '<p class="creds">' + creds.map(esc).join(' · ') + '</p>' : '') +
+      (note ? '<p class="note">' + esc(note) + '</p>' : '') +
+      (rows ? '<ul class="cc-rows info" aria-label="Contact details">' + rows + '</ul>' : '') +
+      (vcard ? '<button class="btn primary add" id="addcontact" type="button">Add to contacts</button>' : '') +
+      (expiry ? '<p class="caption">' + esc(expiry) + '</p>' : '') +
+      '</section>';
 
-    // No files: the card is the whole page, so lay its details out here
-    // rather than behind a button.
-    var cardOnly = !files.length && vcard;
-    if(cardOnly){
-      var rows = contactRows(vcard, false);
-      if(rows) html += '<ul class="cc-rows inline">' + rows + '</ul>';
-    }
     if(links.length){
       html += '<ul class="cc-rows inline links" aria-label="Links">' + links.map(linkRow).join('') + '</ul>';
     }
-
-    html += '<div class="actions">';
-    if(cardOnly) html += '<button class="btn primary" id="addcontact" type="button">Add to contacts</button>';
-    else if(vcard) html += '<button class="btn primary" id="viewcard" type="button" aria-haspopup="dialog">View contact card</button>';
-    if(files.length > 1) html += '<button class="btn" id="all" type="button">Download all (' + files.length + ')</button>';
     html += '</div>';
 
     if(files.length){
-      html += '<p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p><div class="grid' + (files.length === 1 ? ' one' : '') + '">';
+      html += '<div class="files-head"><p class="count">' + files.length + (files.length === 1 ? ' file' : ' files') + '</p>' +
+        (files.length > 1 ? '<button class="btn" id="all" type="button">Download all (' + files.length + ')</button>' : '') +
+        '</div><div class="grid' + (files.length === 1 ? ' one' : '') + '">';
       files.forEach(function(file, i){
         var glyph = file.type === 'pdf' ? '📄' : file.type === 'image' ? '🖼️' : file.type === 'audio' ? '🎵' : '📎';
         var viewable = VIEWABLE.indexOf(file.type) >= 0;
@@ -494,18 +475,9 @@
 
     previewPDFs(files);
 
-    if(expiresAt){
-      expiryEl.textContent = 'Link expires ' + expiresAt.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
-    }
-
     var addcontact = document.getElementById('addcontact');
     if(addcontact) addcontact.addEventListener('click', function(){
       saveContact(who, vcard, photo, addcontact);
-    });
-
-    var viewcard = document.getElementById('viewcard');
-    if(viewcard) viewcard.addEventListener('click', function(){
-      openContactCard({ who: who, role: role, photo: photo, initials: initials, vcard: vcard }, viewcard);
     });
 
     content.addEventListener('click', function(ev){
@@ -839,8 +811,7 @@
     phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
     mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
-    pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
-    x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
+    pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'
   };
   function icon(name){
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
@@ -913,9 +884,6 @@
     var pf = platformOf(href);
     return pf ? '<span class="pf" style="--pf:url(/icons/' + pf + '.png)"></span>' : icon('link');
   }
-  // Images by link address, filled when the card renders, for the contact
-  // card sheet's rows.
-  var linkImages = {};
 
   function domainOf(href){
     try { return new URL(href).hostname.replace(/^www\./, ''); } catch(err){ return ''; }
@@ -978,70 +946,15 @@
       '<span class="cc-txt"><small>' + esc(label) + '</small><span>' + esc(value) + '</span></span></a></li>';
   }
 
-  var sheetEl = null, lastTrigger = null;
-
-  function closeContactCard(){
-    if(!sheetEl || sheetEl.hidden) return;
-    sheetEl.classList.remove('open');
-    document.documentElement.style.overflow = '';
-    var el = sheetEl;
-    setTimeout(function(){ el.hidden = true; }, 200);
-    if(lastTrigger) lastTrigger.focus();
-  }
-
-  // Phone, email, links and address from the vCard, as tappable rows. Used
-  // in the contact card sheet, and inline on a card-only page.
-  // withLinks: false on a card-only page, where the links have their own list.
-  function contactRows(vcard, withLinks){
+  // Phone, email and address from the vCard, as tappable rows on the card.
+  // The vCard's links aren't here: namedLinks() lists them under the card.
+  function contactRows(vcard){
     var c = parseVCard(vcard);
     var rows = '';
     c.tels.forEach(function(t){ rows += row('phone', 'Phone', prettyPhone(t), 'tel:' + t.replace(/[^\d+]/g, ''), false); });
     c.emails.forEach(function(e){ rows += row('mail', 'Email', e, 'mailto:' + e, false); });
-    if(withLinks !== false) c.urls.forEach(function(u){
-      var href = safeURL(u.url);
-      if(href) rows += row('link', u.label || 'Link', u.url.replace(/^https?:\/\//i, '').replace(/\/$/, ''), href, true,
-                           linkIcon(href, linkImages[href]));
-    });
     if(c.adr) rows += row('pin', 'Address', c.adr, 'https://maps.apple.com/?q=' + encodeURIComponent(c.adr), true);
     return rows;
-  }
-
-  function openContactCard(p, trigger){
-    lastTrigger = trigger;
-    var rows = contactRows(p.vcard);
-
-    if(!sheetEl){
-      sheetEl = document.createElement('div');
-      sheetEl.className = 'sheet';
-      sheetEl.hidden = true;
-      document.body.appendChild(sheetEl);
-      sheetEl.addEventListener('click', function(ev){
-        if(ev.target.closest('[data-close]')) closeContactCard();
-        var add = ev.target.closest('#ccAdd');
-        if(add) saveContact(sheetEl.dataset.who, p.vcard, p.photo, add);
-      });
-      document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') closeContactCard(); });
-    }
-    sheetEl.dataset.who = p.who || '';
-    sheetEl.innerHTML =
-      '<div class="scrim" data-close></div>' +
-      '<div class="panel" role="dialog" aria-modal="true" aria-labelledby="ccName">' +
-        '<div class="cc-head">' +
-          '<button class="close" type="button" data-close aria-label="Close">' + icon('x') + '</button>' +
-          '<span class="avatar" aria-hidden="true">' + (p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : esc(p.initials)) + '</span>' +
-          '<h2 id="ccName">' + esc(p.who || 'Contact') + '</h2>' +
-          (p.role ? '<p>' + esc(p.role) + '</p>' : '') +
-        '</div>' +
-        (rows ? '<ul class="cc-rows">' + rows + '</ul>' : '') +
-        '<button class="btn primary cc-add" id="ccAdd" type="button">Add to contacts</button>' +
-      '</div>';
-    sheetEl.hidden = false;
-    document.documentElement.style.overflow = 'hidden';
-    // Flush the start state so the enter transition runs, without waiting
-    // on a frame callback (hidden or throttled tabs never run them).
-    void sheetEl.offsetWidth;
-    sheetEl.classList.add('open');
-    sheetEl.querySelector('.close').focus();
   }
 
   // The stored vCard carries no photo (the app keeps base64 out of vCards
