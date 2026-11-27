@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>A card shared with you — Handleshare</title>
-<meta name="robots" content="noindex, follow">
+<meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="apple-itunes-app" content="app-id=581295018">
 <!-- Static fallback for link previews. Per-link og tags (name, photo) come
      from the /v/<id> worker route; this covers direct view.html links, whose
@@ -144,6 +144,28 @@
   footer a{color:var(--muted2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center;
     transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
   footer a:hover{color:var(--ink)}
+  footer .linkish{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--muted2);cursor:pointer;
+    min-height:44px;display:inline-flex;align-items:center;
+    transition-property:color;transition-duration:140ms;transition-timing-function:var(--ease)}
+  footer .linkish:hover{color:var(--ink)}
+
+  /* Report this card: a small sheet over the page. */
+  dialog.report{border:0;padding:0;margin:auto;width:min(420px,calc(100vw - 32px));border-radius:24px;color:var(--ink);
+    background:var(--panel);box-shadow:var(--glass-edge, 0 0 0 1px rgba(255,255,255,.1)),var(--lift)}
+  dialog.report::backdrop{background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  dialog.report[open]{animation:sheet-in 220ms var(--ease)}
+  @keyframes sheet-in{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+  @media (prefers-reduced-motion:reduce){dialog.report[open]{animation:none}}
+  .report form{padding:22px 20px 16px}
+  .report h2{font-size:20px;line-height:1.25;margin:0 0 4px;text-wrap:balance}
+  .report p{margin:0 0 14px;color:var(--muted2);font-size:15px;text-wrap:pretty}
+  .report fieldset{border:0;margin:0 0 16px;padding:0;display:grid;gap:2px}
+  .report label{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:12px;cursor:pointer;font-size:15px}
+  .report label:hover{background:var(--surface2)}
+  .report input[type=radio]{accent-color:var(--glow);width:18px;height:18px;margin:0}
+  .report .row{display:flex;gap:10px;justify-content:flex-end}
+  .report .small{font-size:13px;color:var(--muted);margin:12px 0 0}
+  .report .small a{color:var(--muted2)}
   /* Phones: one item per line. Side by side, the two links wrap onto
      separate lines at unpredictable points anyway. */
   @media (max-width:599px){
@@ -249,10 +271,33 @@
   </main>
 
   <footer>
-    <a href="mailto:support@handleshare.com?subject=Report%20a%20shared%20Handleshare%20card">Report this card</a>
+    <button type="button" class="linkish" id="report-open" hidden>Report this card</button>
     <a href="https://handleshare.com/?utm_source=cardlink&amp;utm_medium=footer">Made with Handleshare. Make your own card, free.</a>
   </footer>
 </div>
+
+<!-- Report this card. Posts the reason to the worker; three reports from
+     different people pause the card until we look. -->
+<dialog class="report" id="report" aria-labelledby="report-title">
+  <form method="dialog" id="report-form">
+    <h2 id="report-title">Report this card</h2>
+    <p>The person who shared it won't see who reported it.</p>
+    <fieldset>
+      <legend class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Reason</legend>
+      <label><input type="radio" name="reason" value="scam" required> Scam, phishing or fraud</label>
+      <label><input type="radio" name="reason" value="impersonation"> Pretending to be someone else</label>
+      <label><input type="radio" name="reason" value="spam"> Spam</label>
+      <label><input type="radio" name="reason" value="abuse"> Harassment or hate</label>
+      <label><input type="radio" name="reason" value="illegal"> Illegal content</label>
+      <label><input type="radio" name="reason" value="other"> Something else</label>
+    </fieldset>
+    <div class="row">
+      <button type="button" class="btn" id="report-cancel">Cancel</button>
+      <button type="submit" class="btn primary" id="report-send">Send Report</button>
+    </div>
+    <p class="small">To tell us more, email <a href="mailto:support@handleshare.com?subject=Report%20a%20shared%20Handleshare%20card">support@handleshare.com</a>.</p>
+  </form>
+</dialog>
 
 <script>
 (function(){
@@ -344,10 +389,23 @@
     fetch(WORKER + '/card/' + encodeURIComponent(recordName), { cache: 'no-store' })
       .then(function(r){
         if(r.status === 404) return null;
-        if(r.status === 410) return r.json().then(function(j){ return j && j.error === 'removed' ? { removed: true } : { expired: true, firstName: j && j.firstName }; });
+        if(r.status === 429) return { slow: true };
+        if(r.status === 410) return r.json().then(function(j){
+          if(j && j.error === 'removed') return { removed: true };
+          if(j && j.error === 'paused') return { paused: true };
+          return { expired: true, firstName: j && j.firstName };
+        });
         if(!r.ok) throw new Error('card ' + r.status);
         return r.json();
       }).then(function(rec){
+      if(rec && rec.slow){
+        state('<strong>Too many requests.</strong>Wait a minute, then reload the page.');
+        return;
+      }
+      if(rec && rec.paused){
+        state('<strong>This card is paused.</strong>People reported it, so it\'s unavailable while we take a look.');
+        return;
+      }
       if(rec && rec.removed){
         state('<strong>This card was removed.</strong>It is no longer available.');
         return;
@@ -1019,6 +1077,34 @@
     a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
   }
+
+  // Report this card (the dialog above). Answers "thanks" whatever happens:
+  // the worker records it only for a live link, and a visitor learns nothing.
+  (function(){
+    var open = document.getElementById('report-open');
+    var dlg = document.getElementById('report');
+    if(!open || !dlg || !recordName || typeof dlg.showModal !== 'function') return;
+    var form = document.getElementById('report-form');
+    var send = document.getElementById('report-send');
+    open.hidden = false;
+    open.addEventListener('click', function(){ dlg.showModal(); });
+    document.getElementById('report-cancel').addEventListener('click', function(){ dlg.close(); });
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var picked = form.querySelector('input[name=reason]:checked');
+      if(!picked) return;
+      send.disabled = true;
+      send.textContent = 'Sending…';
+      fetch(WORKER + '/report/' + encodeURIComponent(recordName), {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reason: picked.value })
+      }).catch(function(){}).then(function(){
+        dlg.close();
+        open.textContent = 'Reported. Thank you.';
+        open.disabled = true;
+      });
+    });
+  })();
 })();
 </script>
 <script src="lottie_light.min.js" defer></script>
