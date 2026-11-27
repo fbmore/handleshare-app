@@ -970,7 +970,9 @@
     return list.map(function(l){
       var href = safeURL(l.url);
       if(!href) return null;
-      var domain = l.domain || domainOf(href);
+      // The grey line under a link is always where it really goes, never a
+      // domain the card itself claims.
+      var domain = domainOf(href) || l.domain;
       return { href: href, name: l.name || domain || l.url, domain: domain, image: l.image };
     }).filter(Boolean);
   }
@@ -989,12 +991,19 @@
     return p;
   }
 
-  // Only web links become hrefs, so a pasted "javascript:" can never run.
+  // Only web links become hrefs, so a pasted "javascript:" or "data:" can
+  // never run. Also dropped: direct downloads of apps and installers, and
+  // addresses with a user name in them ("https://bank.com@other.site"), a
+  // classic way to make a link look like it goes somewhere it doesn't.
+  var RISKY_FILE = /\.(apk|aab|xapk|exe|msi|scr|bat|cmd|pif|vbs|jar|ps1|sh|dmg|pkg|app|ipa|deb|rpm|appimage)$/i;
   function safeURL(u){
     var withScheme = /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : 'https://' + u;
     try {
       var parsed = new URL(withScheme);
-      return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.href : null;
+      if(parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+      if(parsed.username || parsed.password) return null;
+      if(RISKY_FILE.test(parsed.pathname)) return null;
+      return parsed.href;
     } catch(err){ return null; }
   }
 
