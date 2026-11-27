@@ -117,6 +117,12 @@
   .avatar img{width:100%;height:100%;object-fit:cover;display:block}
   h1{font-size:26px;line-height:1.22;font-weight:600;margin:0;text-wrap:balance}
   .role{color:rgba(255,255,255,.8);font-size:17px;margin:4px 0 0;white-space:pre-line;text-wrap:balance}
+  /* Intro and bio: the intro reads as a lead line, the bio as body text,
+     both centred like the rest of the card. */
+  .about{margin:16px 0 0}
+  .about .intro{margin:0;font-size:16px;line-height:1.45;color:rgba(255,255,255,.9);white-space:pre-line;text-wrap:pretty;text-align:center}
+  .about .bio{margin:10px 0 0;font-size:15px;line-height:1.55;color:var(--muted2);white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
+  .about .intro:only-child{margin:0}
   .note{margin:14px 0 0;color:var(--muted2);font-size:15px;white-space:pre-line;overflow-wrap:anywhere;text-wrap:pretty}
   /* The QR code's place. Outer 16 = rows 12 + 4 padding. */
   .reach{margin-top:22px}
@@ -509,6 +515,7 @@
     var who = clean(f.senderName && f.senderName.value, 60);
     var role = clean(f.senderRole && f.senderRole.value, 90);
     var note = clean(f.message && f.message.value, 600);
+    var about = aboutOf(f);
     var vcard = (f.vcard && f.vcard.value) || '';
     var photo = (f.senderPhoto && f.senderPhoto.value && f.senderPhoto.value.downloadURL || '').replace('${f}', 'sender.jpg');
     var items = (f.items && f.items.value) || [];
@@ -555,6 +562,9 @@
       '<div class="who' + rise() + '"><h1>' + esc(who || 'A card shared with you') + '</h1>' +
       (role ? '<p class="role">' + esc(role) + '</p>' : '') +
       (creds.length ? '<p class="creds">' + creds.map(esc).join(' · ') + '</p>' : '') + '</div>' +
+      (about.intro || about.bio ? '<div class="about' + rise() + '">' +
+        (about.intro ? '<p class="intro">' + esc(about.intro) + '</p>' : '') +
+        (about.bio ? '<p class="bio">' + esc(about.bio) + '</p>' : '') + '</div>' : '') +
       (note ? '<p class="note' + rise() + '">' + esc(note) + '</p>' : '') +
       (rows || vcard ? '<div class="reach' + rise() + '">' +
         (rows ? '<ul class="cc-rows info" aria-label="Contact details">' + rows + '</ul>' : '') +
@@ -938,14 +948,15 @@
   // sender chose to share. Every value is a real link: tel:, mailto:, the
   // page itself, or a map search for the address.
 
+  // Filled glyphs, like the app's filled SF Symbols (Heroicons solid, MIT).
   var ICONS = {
-    phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
-    mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
-    link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
-    pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'
+    phone: '<path d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"/>',
+    mail: '<path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"/><path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"/>',
+    link: '<path d="M19.902 4.098a3.75 3.75 0 0 0-5.304 0l-4.5 4.5a3.75 3.75 0 0 0 1.035 6.037.75.75 0 0 1-.646 1.353 5.25 5.25 0 0 1-1.449-8.45l4.5-4.5a5.25 5.25 0 1 1 7.424 7.424l-1.757 1.757a.75.75 0 1 1-1.06-1.06l1.757-1.757a3.75 3.75 0 0 0 0-5.304Zm-7.389 4.267a.75.75 0 0 1 1-.353 5.25 5.25 0 0 1 1.449 8.45l-4.5 4.5a5.25 5.25 0 1 1-7.424-7.424l1.757-1.757a.75.75 0 1 1 1.06 1.06l-1.757 1.757a3.75 3.75 0 1 0 5.304 5.304l4.5-4.5a3.75 3.75 0 0 0-1.035-6.037.75.75 0 0 1-.354-1Z"/>',
+    pin: '<path d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>'
   };
   function icon(name){
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+    return '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true">' + ICONS[name] + '</svg>';
   }
 
   function parseVCard(text){
@@ -1027,6 +1038,8 @@
     var list = [];
     try {
       var parsed = JSON.parse((f.linksJSON && f.linksJSON.value) || '[]');
+      // {links, intro, bio} when the sender added their intro or bio.
+      if(parsed && !Array.isArray(parsed)) parsed = parsed.links || [];
       if(Array.isArray(parsed)) list = parsed.slice(0, 60).map(function(l){
         var img = typeof l.i === 'number' && images[l.i];
         return { url: String(l.u || ''), name: clean(l.n, 120), domain: clean(l.d, 80),
@@ -1048,6 +1061,21 @@
       var domain = domainOf(href) || l.domain;
       return { href: href, name: l.name || domain || l.url, domain: domain, image: l.image };
     }).filter(Boolean);
+  }
+
+  // The intro and bio, when the sender chose to include them. Line breaks
+  // are kept (white-space: pre-line); runs of blank lines are not.
+  function aboutOf(f){
+    try {
+      var o = JSON.parse((f.linksJSON && f.linksJSON.value) || '[]');
+      if(!o || Array.isArray(o)) return {};
+      function text(v, max){
+        if(typeof v !== 'string') return '';
+        v = v.replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+        return v.length > max ? v.slice(0, max) + '…' : v;
+      }
+      return { intro: text(o.intro, 400), bio: text(o.bio, 1200) };
+    } catch(err){ return {}; }
   }
 
   function linkRow(l){
