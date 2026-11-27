@@ -12,8 +12,8 @@
 <meta property="og:title" content="A card shared with you">
 <meta property="og:description" content="A card shared privately with Handleshare.">
 <meta property="og:image" content="https://handleshare.com/logo.png">
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
   :root{
     --g1:#B44DFF;--g2:#E05BEF;--g3:#F3C6FF;
@@ -305,7 +305,7 @@
 <div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="wrap">
   <nav>
-    <a href="https://handleshare.com/"><span class="logo-lottie" aria-hidden="true"><img src="logo.png" alt=""></span>Handleshare</a>
+    <a href="https://handleshare.com/"><span class="logo-lottie" aria-hidden="true"><img src="/logo.png" alt=""></span>Handleshare</a>
   </nav>
 
   <main id="content">
@@ -350,10 +350,21 @@
   var WORKER = 'https://handleshare-views.fbmore.workers.dev';
 
   var content = document.getElementById('content');
-  var recordName = (location.hash || '').replace(/^#/, '').split('/')[0];
-  // "#<id>/preview" is the sender checking their own link from the app: same
-  // page, marked as a preview, and not counted as a view.
-  var isPreview = /\/preview$/i.test(location.hash || '');
+  // Cards live on their own domain, so a page someone abuses can never get
+  // handleshare.com itself blocklisted. The worker serves this page at
+  // handleshare.me/v/<id>; older links (handleshare.com/view.html#<id>) are
+  // sent there before anything loads.
+  var CARD_SITE = 'https://handleshare.me';
+  var pathId = (location.pathname.match(/^\/v\/([A-Za-z0-9-]{10,100})\/?$/) || [])[1];
+  var recordName = pathId || (location.hash || '').replace(/^#/, '').split('/')[0];
+  // "#preview" (or the older "#<id>/preview") is the sender checking their
+  // own link from the app: same page, marked as a preview, not counted.
+  var isPreview = /(^#|\/)preview$/i.test(location.hash || '');
+  if(!pathId && /^[A-Za-z0-9-]{10,100}$/.test(recordName) && location.hostname !== 'handleshare.me'
+     && location.protocol === 'https:'){
+    location.replace(CARD_SITE + '/v/' + recordName + (isPreview ? '#preview' : ''));
+    return;
+  }
 
   function state(html){
     content.innerHTML = '<div class="state">' + html + '</div>';
@@ -1217,7 +1228,7 @@
   })();
 })();
 </script>
-<script src="lottie_light.min.js" defer></script>
-<script src="logo.js" defer></script>
+<script src="/lottie_light.min.js" defer></script>
+<script src="/logo.js" defer></script>
 </body>
 </html>
