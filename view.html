@@ -360,7 +360,9 @@
   // "#preview" (or the older "#<id>/preview") is the sender checking their
   // own link from the app: same page, marked as a preview, not counted.
   var isPreview = /(^#|\/)preview$/i.test(location.hash || '');
-  if(!pathId && /^[A-Za-z0-9-]{10,100}$/.test(recordName) && location.hostname !== 'handleshare.me'
+  // Flip on once handleshare.me resolves everywhere.
+  var FORWARD_TO_CARD_SITE = false;
+  if(FORWARD_TO_CARD_SITE && !pathId && /^[A-Za-z0-9-]{10,100}$/.test(recordName) && location.hostname !== 'handleshare.me'
      && location.protocol === 'https:'){
     location.replace(CARD_SITE + '/v/' + recordName + (isPreview ? '#preview' : ''));
     return;
